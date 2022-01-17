@@ -1,0 +1,11 @@
+aioredis
+asgi-lifespan
+coscmd
+fastapi
+httpx
+python-dateutil
+python-jose[cryptography]
+requests
+uvicorn
+fastapi_jwt_auth
+passlib
