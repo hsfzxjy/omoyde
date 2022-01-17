@@ -1,0 +1,27 @@
+{
+  "tcloud": {
+    "appId": "",
+    "secretId": "",
+    "secretKey": ""
+  },
+  "cos": {
+    "bucket": "",
+    "region": ""
+  },
+  "web": {
+    "authURL": "",
+    "title": "Albu Photo Gallery"
+  },
+  "wx": {
+    "appId": "",
+    "appSecret": ""
+  },
+  "security": {
+    "secret": "",
+    "pincode": "",
+    "password": ""
+  },
+  "system": {
+    "docker_name": "omoyde-api"
+  }
+}
