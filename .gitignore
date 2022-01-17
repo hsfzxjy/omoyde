@@ -283,3 +283,6 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# >>> omoyde specific
+config.json
