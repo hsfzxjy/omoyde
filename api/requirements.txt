@@ -9,3 +9,5 @@ requests
 uvicorn
 fastapi_jwt_auth
 passlib
+qcloud-python-sts
+cos-python-sdk-v5
