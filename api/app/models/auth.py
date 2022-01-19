@@ -11,7 +11,7 @@ class JWTSettings(BaseModel):
     authjwt_cookie_csrf_protect: bool = False
     authjwt_algorithms: set = {"HS256"}
     authjwt_decode_algorithms: set = {"HS256"}
-    authjwt_access_token_expires: timedelta = timedelta(seconds=15)
+    authjwt_access_token_expires: timedelta = timedelta(minutes=60)
     authjwt_refresh_token_expires: timedelta = timedelta(days=60)
 
 
