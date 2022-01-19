@@ -4,6 +4,7 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status, FastAPI, Request
 from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
+from qcloud_cos import CosConfig, CosS3Client
 
 from app.models.config import cfg
 
@@ -18,11 +19,21 @@ __all__ = [
     "Depends",
     "HTTPException",
     "status",
+    "cos_client",
 ]
 
 app = FastAPI(title="FastAPI Redis Tutorial")
 redis = aioredis.from_url(cfg.redis_url, decode_responses=True)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+cos_config = CosConfig(
+    Appid=cfg.tcloud.appId,
+    Region=cfg.cos.region,
+    SecretId=cfg.tcloud.secretId,
+    SecretKey=cfg.tcloud.secretKey,
+    Domain=cfg.system.domain,
+    Scheme="https",
+)
+cos_client = CosS3Client(cos_config)
 
 
 @app.exception_handler(AuthJWTException)
