@@ -24,12 +24,20 @@ class SecurityConfig(BaseSettings):
     secret: str
 
 
+class SystemConfig(BaseSettings):
+    domain: str
+
+    class Config:
+        extra = "ignore"
+
+
 class Config(BaseSettings):
     redis_url: str = "redis://127.0.0.1:6379"
     tcloud: TencentCloudConfig
     cos: TencentCOSConfig
     security: SecurityConfig
     wx: WeixinConfig
+    system: SystemConfig
 
     class Config:
         extra = "ignore"
