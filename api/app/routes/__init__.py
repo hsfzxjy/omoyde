@@ -1,3 +1,3 @@
-from . import auth
+from . import auth, storage
 
 from ..prelude import *
