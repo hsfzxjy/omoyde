@@ -2,19 +2,19 @@
   "tcloud": {
     "appId": "",
     "secretId": "",
-    "secretKey": ""
-  },
-  "cos": {
-    "bucket": "",
-    "region": ""
-  },
-  "web": {
-    "authURL": "",
-    "title": "Albu Photo Gallery"
+    "secretKey": "",
+    "cos": {
+      "bucket": "",
+      "region": ""
+    }
   },
   "wx": {
     "appId": "",
     "appSecret": ""
+  },
+  "web": {
+    "authURL": "",
+    "title": "Albu Photo Gallery"
   },
   "security": {
     "secret": "",
