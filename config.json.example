@@ -22,6 +22,7 @@
     "password": ""
   },
   "system": {
-    "docker_name": "omoyde-api"
+    "docker_name": "omoyde-api",
+    "domain": ""
   }
 }
