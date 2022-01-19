@@ -2,15 +2,16 @@ from pathlib import Path
 from pydantic import BaseSettings
 
 
+class TencentCOSConfig(BaseSettings):
+    bucket: str
+    region: str
+
+
 class TencentCloudConfig(BaseSettings):
     appId: str
     secretId: str
     secretKey: str
-
-
-class TencentCOSConfig(BaseSettings):
-    bucket: str
-    region: str
+    cos: TencentCOSConfig
 
 
 class WeixinConfig(BaseSettings):
@@ -34,7 +35,6 @@ class SystemConfig(BaseSettings):
 class Config(BaseSettings):
     redis_url: str = "redis://127.0.0.1:6379"
     tcloud: TencentCloudConfig
-    cos: TencentCOSConfig
     security: SecurityConfig
     wx: WeixinConfig
     system: SystemConfig

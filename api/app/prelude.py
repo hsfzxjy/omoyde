@@ -27,7 +27,7 @@ redis = aioredis.from_url(cfg.redis_url, decode_responses=True)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 cos_config = CosConfig(
     Appid=cfg.tcloud.appId,
-    Region=cfg.cos.region,
+    Region=cfg.tcloud.cos.region,
     SecretId=cfg.tcloud.secretId,
     SecretKey=cfg.tcloud.secretKey,
     Domain=cfg.system.domain,

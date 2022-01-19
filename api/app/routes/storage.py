@@ -9,8 +9,8 @@ def get_cos_credential():
         "duration_seconds": 3600,
         "secret_id": cfg.tcloud.secretId,
         "secret_key": cfg.tcloud.secretKey,
-        "bucket": cfg.cos.bucket,
-        "region": cfg.cos.region,
+        "bucket": cfg.tcloud.cos.bucket,
+        "region": cfg.tcloud.cos.region,
         "allow_prefix": "assets/*",
         "allow_actions": [
             "name/cos:GetObject",
