@@ -305,3 +305,4 @@ config.json
 !/.butler/.gitkeep
 /assets/*
 !/assets/.gitkeep
+/tools/migrate.sh
