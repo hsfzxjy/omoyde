@@ -1,0 +1,22 @@
+[package]
+edition = "2021"
+name = "butler"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.52"
+atomic_refcell = "0.1.8"
+atomicwrites = "0.3.1"
+bincode = "1.2.1"
+byteorder = "1.4.3"
+chrono = {version = "0.4.19", features = ["serde"]}
+clap = {version = "3.0.10", features = ["derive"]}
+fasthash = "0.4.0"
+image = "0.23.14"
+kamadak-exif = "0.5.4"
+lazy_static = "1.4.0"
+rayon = "1.5.1"
+serde = {version = "1.0", features = ["derive", "rc"]}
+uuid = {version = "0.8.2", features = ["v4", "serde"]}
