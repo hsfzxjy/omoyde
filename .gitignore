@@ -301,3 +301,7 @@ Cargo.lock
 
 # >>> omoyde specific
 config.json
+/.butler/*
+!/.butler/.gitkeep
+/assets/*
+!/assets/.gitkeep
