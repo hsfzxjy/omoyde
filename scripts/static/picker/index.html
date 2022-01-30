@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Omoyde Photo Picker</title>
+    <link rel="stylesheet" href="./main.min.css" />
+  </head>
+  <body>
+    <nav id="nav">
+      <span class="brand">Picker</span>
+      <div class="toolbar">
+        <select id="filter">
+          <option value="all" checked>all</option>
+          <option value="reviewed">reviewed</option>
+          <option value="unreviewed">unreviewed</option>
+          <option value="selected">selected</option>
+          <option value="unselected">unselected</option>
+        </select>
+        <select id="since"></select>
+      </div>
+      <span class="splitter"></span>
+      <button>commit</button>
+    </nav>
+    <div id="main">
+      <aside class="sidebar">
+        <ul></ul>
+      </aside>
+      <div class="container">
+        <div class="client-area"></div>
+      </div>
+    </div>
+  </body>
+  <script src="./main.js"></script>
+  <script>
+    main()
+  </script>
+</html>

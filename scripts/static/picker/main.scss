@@ -1,0 +1,120 @@
+$bg-color: whitesmoke;
+
+html {
+  font-size: 20px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background-color: $bg-color;
+  height: 100%;
+  max-height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+#nav {
+  padding: 0.5rem 0.5rem;
+  background-color: #fff;
+  display: flex;
+  align-items: baseline;
+  .brand {
+    font-weight: 900;
+    font-size: 1.5rem;
+    font-family: "Courier New", Courier, monospace;
+  }
+  .splitter {
+    flex-grow: 1;
+  }
+  .toolbar {
+    padding: 0 1rem;
+  }
+}
+
+#main {
+  flex-grow: 1;
+  flex-shrink: 1;
+  display: flex;
+  > .sidebar {
+    flex: 0 0 200px;
+    font-size: 0.9rem;
+    max-height: 100%;
+
+    > ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      > li {
+        padding: 1rem;
+        cursor: pointer;
+        transition: background-color 0.1s ease-in;
+
+        &:hover,
+        &.active {
+          word-wrap: break-word;
+          background-color: darken($bg-color, 10%);
+        }
+      }
+    }
+  }
+  > .container {
+    flex: 1 1 0px;
+    background-color: lighten($color: $bg-color, $amount: 2%);
+    position: relative;
+
+    > .client-area {
+      display: flex;
+      flex-wrap: wrap;
+      position: absolute;
+      overflow: auto;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+
+      > .empty {
+        align-self: stretch;
+        flex: 1 1 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        > span {
+          color: lightslategray;
+          font-size: 5rem;
+        }
+      }
+
+      > .item {
+        flex: 0 0 50%;
+        width: 50%;
+        padding: 2rem 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: box-shadow 0.1s ease-in;
+
+        > img {
+          max-width: 100%;
+          max-height: 200px;
+          text-align: center;
+        }
+        > .meta {
+          padding: 0 1rem;
+          font-size: 0.7rem;
+        }
+
+        &:hover {
+          box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2),
+            0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        }
+      }
+    }
+  }
+}
