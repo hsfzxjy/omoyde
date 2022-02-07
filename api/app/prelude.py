@@ -1,7 +1,9 @@
+from typing import Union
 import aioredis
 from pydantic import BaseModel
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status, FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
@@ -47,8 +49,15 @@ app.add_middleware(
 
 
 @app.exception_handler(AuthJWTException)
-def authjwt_exception_handler(_request: Request, exc: AuthJWTException):
+@app.exception_handler(HTTPException)
+def authjwt_exception_handler(
+    _request: Request, exc: Union[AuthJWTException, HTTPException]
+):
+    if isinstance(exc, AuthJWTException):
+        message = exc.message
+    else:
+        message = exc.detail
     return JSONResponse(
         status_code=exc.status_code,
-        content={"detail": exc.message},
+        content={"error": exc.__class__.__name__, "detail": message},
     )
