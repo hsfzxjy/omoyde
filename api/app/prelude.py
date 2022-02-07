@@ -2,6 +2,7 @@ import aioredis
 from pydantic import BaseModel
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
 from qcloud_cos import CosConfig, CosS3Client
@@ -34,6 +35,15 @@ cos_config = CosConfig(
     Scheme="https",
 )
 cos_client = CosS3Client(cos_config)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.exception_handler(AuthJWTException)
