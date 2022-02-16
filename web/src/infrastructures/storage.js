@@ -68,6 +68,11 @@ export const storageClient = new Resource("storageClient")
       return {
         body: Body,
         headers,
+        lastModified,
       }
     },
   })
+
+function lastModified() {
+  return new Date(this.headers["last-modified"])
+}
