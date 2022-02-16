@@ -229,8 +229,9 @@ export class LSResource extends Resource {
   _loadValue() {
     const value = window.localStorage.getItem(this._key)
     if (value !== null) {
-      this._to(STATE_READY)
       this._value = JSON.parse(value)
+      this._to(STATE_READY)
+      this._poll()
     }
   }
 
