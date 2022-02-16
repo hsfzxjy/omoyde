@@ -136,6 +136,11 @@ export class Resource {
         throw new Error(`unexpected state ${this._state.toString()}`)
     }
   }
+  readyVal() {
+    const val = this.val()
+    if (!(val instanceof Promise)) return val
+    return val.catch(() => this.readyVal())
+  }
   version() {
     return this._version
   }
