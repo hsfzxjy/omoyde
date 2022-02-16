@@ -1,5 +1,3 @@
-"use strict"
-
 import Axios from "axios"
 import { retryOnNetworkFailure } from "../utils/network"
 
