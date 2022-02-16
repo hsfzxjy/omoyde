@@ -103,6 +103,19 @@ export class Resource {
     this._events.on(STATE_READY, cb)
     return this
   }
+  extend(methods) {
+    for (const [name, fn] of Object.entries(methods)) {
+      this[name] = async function (...rest) {
+        const val = await this.val()
+        if (fn === "proxy") {
+          return val[name].apply(val, rest)
+        } else {
+          return fn.apply(val, rest)
+        }
+      }
+    }
+    return this
+  }
   send(phrase, val) {
     this._events.emit("SEND", phrase, val)
   }
