@@ -27,7 +27,7 @@ impl LocalPhotoEntry {
         if self.file_hash.is_some() {
             return Ok(());
         }
-        let mut reader = File::open(self.filepath())?;
+        let mut reader = BufReader::new(File::open(self.filepath())?);
         let mut hasher = fasthash::xx::Hasher64::new();
         hasher.write_stream(&mut reader)?;
         let hash_val = hasher.finish();
