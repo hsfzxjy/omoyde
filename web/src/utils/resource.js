@@ -123,7 +123,7 @@ export class Resource {
           })
         })
       default:
-        throw new Error(`unexpected state ${this._state}`)
+        throw new Error(`unexpected state ${this._state.toString()}`)
     }
   }
   version() {
