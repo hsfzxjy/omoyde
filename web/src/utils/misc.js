@@ -7,6 +7,11 @@ export function stringifyAsKey(keyLike) {
   return keyLike.toString()
 }
 
+export function randomRange(low, high) {
+  const v = Math.random()
+  return low + (high - low) * v
+}
+
 export function debounce(cb, timeout, setupCtx) {
   setupCtx = setupCtx || (() => ({}))
   let timer = null
