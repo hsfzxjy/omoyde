@@ -1,4 +1,6 @@
 import { nextTick } from "vue"
+import { Mutex } from "./aio"
+import { debounce } from "./misc"
 
 export class ScrollTopRecoverer {
   constructor(scrollableGetter, anchorGetter) {
@@ -18,5 +20,28 @@ export class ScrollTopRecoverer {
       $scrollable.scrollTop =
         oldScrollTop - oldAnchorOffsetTop + newAnchorOffsetTop
     }
+  }
+}
+
+export class DebouncedIntersectionObserver extends IntersectionObserver {
+  constructor({ onEvent, handle, setupCtx, options }) {
+    const { timeout = 150 } = options
+    const mutex = new Mutex()
+    const deb = debounce(
+      (...rest) => mutex.guard(() => handle(...rest)),
+      timeout,
+      setupCtx
+    )
+    const cb = (entries) =>
+      mutex.guard(() => {
+        onEvent(entries, deb.ctx)
+        deb.invoke()
+      })
+
+    super(cb, options)
+    this._deb = deb
+  }
+  nextTick() {
+    return this._deb.nextTick()
   }
 }
