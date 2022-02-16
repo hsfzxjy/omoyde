@@ -93,6 +93,12 @@ export class Resource {
   autoReset() {
     return this.onExpiredOrPanicked((h) => h.reset())
   }
+  drive() {
+    if (this._state !== STATE_CREATED)
+      throw new Error(`Resource ${this.name} has already driven`)
+    this.val()
+    return this
+  }
   send(phrase, val) {
     this._events.emit("SEND", phrase, val)
   }
@@ -224,6 +230,10 @@ export class LSResource extends Resource {
       .on(STATE_EXPIRED, this._eraseValue.bind(this))
   }
 
+  drive() {
+    this._loadValue()
+    if (this._state === STATE_CREATED) super.drive()
+    return this
   }
 
   _loadValue() {
