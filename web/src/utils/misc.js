@@ -39,3 +39,5 @@ export function debounce(cb, timeout, setupCtx) {
   }
   return handler
 }
+
+export const patch = Object.assign
