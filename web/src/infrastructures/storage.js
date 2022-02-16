@@ -71,6 +71,12 @@ export const storageClient = new Resource("storageClient")
         lastModified,
       }
     },
+    async getFileMetadata({ filePath }) {
+      const { headers } = await storageClient.service("headObject", {
+        Key: filePath,
+      })
+      return { headers, lastModified }
+    },
   })
 
 function lastModified() {
