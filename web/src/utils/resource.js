@@ -1,4 +1,5 @@
 import EventEmitter from "events"
+import { stringifyAsKey } from "./misc"
 
 const STATE_CREATED = Symbol("STATE_CREATED")
 const STATE_UNINIT = Symbol("STATE_UNINIT")
@@ -212,22 +213,17 @@ export class Resource {
   }
 }
 
-function makeLSKey(key) {
-  if (Array.isArray(key)) {
-    key = key.join("")
-  }
-  return key
-}
-
 export class LSResource extends Resource {
-  constructor(name, key) {
-    super(name)
-    this._key = makeLSKey(key)
-    this._loadValue()
+  constructor(key) {
+    const _key = stringifyAsKey(key)
+    super(`LSResource[${_key}]`)
+    this._key = _key
     this._events
-      .on("ready", this._saveValue.bind(this))
-      .on("panic", this._eraseValue.bind(this))
-      .on("expired", this._eraseValue.bind(this))
+      .on(STATE_READY, this._saveValue.bind(this))
+      .on(STATE_PANICKED, this._eraseValue.bind(this))
+      .on(STATE_EXPIRED, this._eraseValue.bind(this))
+  }
+
   }
 
   _loadValue() {
