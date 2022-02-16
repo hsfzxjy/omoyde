@@ -29,7 +29,6 @@ fn goto_work_directory() -> Result<()> {
         }
     }
     env::set_current_dir(&curdir)?;
-    // println!("cd to: {}", curdir.display());
     Ok(())
 }
 

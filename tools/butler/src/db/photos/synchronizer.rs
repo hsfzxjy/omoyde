@@ -201,7 +201,6 @@ pub trait Syncer: Sized {
     {
         if self.get_stub().is_some() {
             let item = db.query_item_mut(self.get_query()).unwrap();
-            // item.run_finish(self);
             let output = item.run_finish(&self);
             db.sync_item(output, self)
         } else {
@@ -221,7 +220,6 @@ use Stage::*;
 
 impl Stage {
     fn next(&mut self) {
-        // use Stage::*;
         *self = match self {
             NotStarted => Stage1,
             Stage1 => Stage2,

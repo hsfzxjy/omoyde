@@ -35,7 +35,6 @@ pub mod serde {
             let file = File::open(path)?;
             let reader = BufReader::new(file);
             let desered: T = bincode::deserialize_from(reader)?;
-            // self.build_index();
             mem::drop(mem::replace(self, desered));
             Ok(())
         }
