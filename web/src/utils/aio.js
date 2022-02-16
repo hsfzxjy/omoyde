@@ -29,3 +29,43 @@ export class Deferred {
     this._promise = this._resolve = null
   }
 }
+
+export class Mutex {
+  constructor() {
+    this._deferred = new Deferred()
+  }
+  async lock() {
+    while (this._deferred.pending()) {
+      await this._deferred.wait()
+    }
+    this._deferred.reset()
+  }
+  tryLock(throws = true) {
+    if (this._deferred.pending())
+      if (throws) {
+        throw new Error("Mutex has been locked")
+      } else return false
+    this._deferred.reset()
+    return true
+  }
+  unlock() {
+    this._deferred.resolve()
+  }
+  async guard(cb) {
+    await this.lock()
+    try {
+      return await cb()
+    } finally {
+      this.unlock()
+    }
+  }
+  async guardOrSkip(cb) {
+    const success = this.tryLock(false)
+    if (!success) return
+    try {
+      return await cb()
+    } finally {
+      this.unlock()
+    }
+  }
+}
