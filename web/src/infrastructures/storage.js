@@ -6,7 +6,7 @@ import { retryOnNetworkFailure } from "../utils/network"
 
 export const storageCredential = new Resource("storageCredential")
   .onInit(async (h) => {
-    await accessToken.val()
+    await accessToken.readyVal()
     const accessTokenSnapshot = accessToken.version()
     const r = await APIClient.get("/storage/credential")
     if (r.data.error) {
@@ -24,7 +24,7 @@ const BUCKET_INFO = {
 
 export const storageBackend = new Resource("storageBackend")
   .onInit(async (h) => {
-    const cred = await storageCredential.val()
+    const cred = await storageCredential.readyVal()
     const cos = new COS({
       getAuthorization: (_, callback) => {
         callback({
