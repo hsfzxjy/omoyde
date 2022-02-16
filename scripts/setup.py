@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+from copy import deepcopy
 from pathlib import Path
 from passlib.context import CryptContext
 
@@ -43,10 +44,15 @@ def setup_web_vue_env_file():
             for k, v in sorted(entries.items()):
                 fd.write(f"{k}={v}\n")
 
-    _transcribe(config_content)
+    cfg = deepcopy(config_content)
+    cfg["security"]["password"] = ""
+    cfg["security"]["pincode"] = ""
+    _transcribe(cfg)
     _to_file(root_dir / "web" / ".env")
-    config_content["web"]["authURL"] = "http://localhost:8080"
-    _transcribe(config_content)
+
+    cfg = deepcopy(config_content)
+    cfg["web"]["authURL"] = "http://localhost:8080"
+    _transcribe(cfg)
     _to_file(root_dir / "web" / ".env.development.local")
 
 
