@@ -9,7 +9,9 @@ export const refreshToken = new Resource("refreshToken").onExpired(
 )
 
 export const accessToken = new Resource("accessToken").onExpired(async (h) => {
+  const refreshTokenExpecting = refreshToken.isExpecting()
   await refreshToken.val()
+  if (refreshTokenExpecting) h.ready()
   const pincode = await h.expect("PINCODE")
   const r = await APIClient.post("/refresh", { password: pincode })
   if (r.data.error) {
