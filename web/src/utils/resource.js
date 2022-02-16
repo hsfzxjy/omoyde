@@ -116,6 +116,9 @@ export class Resource {
     }
     return this
   }
+  isExpecting() {
+    return this._state === STATE_EXPECTING
+  }
   send(phrase, val) {
     this._events.emit("SEND", phrase, val)
   }
