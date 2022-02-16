@@ -99,6 +99,10 @@ export class Resource {
     this.val()
     return this
   }
+  afterReady(cb) {
+    this._events.on(STATE_READY, cb)
+    return this
+  }
   send(phrase, val) {
     this._events.emit("SEND", phrase, val)
   }
@@ -184,6 +188,7 @@ export class Resource {
         return
 
       case STATE_READY:
+        this._events.emit(STATE_READY, this._value)
         this._events.once("AWAKE", () => {
           this._to(STATE_REQUEST_INCOMING)
           this._poll()
