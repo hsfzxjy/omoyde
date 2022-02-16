@@ -1,10 +1,16 @@
 from typing import Literal
+import json
 from sts.sts import Sts
 
 from app.prelude import *
 
+REDIS_KEY_COS_CREDENTIAL = ":sts:crendential"
 
-def get_cos_credential():
+
+async def get_cos_credential():
+    cred = await redis.get(REDIS_KEY_COS_CREDENTIAL)
+    if cred is not None:
+        return json.loads(cred)
     config = {
         "duration_seconds": 3600,
         "secret_id": cfg.tcloud.secretId,
@@ -21,10 +27,12 @@ def get_cos_credential():
 
     # propagate the exception, if any
     sts = Sts(config)
-    return dict(sts.get_credential())
+    cred = dict(sts.get_credential())
+    await redis.set(REDIS_KEY_COS_CREDENTIAL, json.dumps(cred), ex=3540)
+    return cred
 
 
 @app.get("/storage/credential")
-def storage_get_credential(Authorize: AuthJWT = Depends()):
+async def storage_get_credential(Authorize: AuthJWT = Depends()):
     Authorize.jwt_required()
-    return get_cos_credential()
+    return await get_cos_credential()
