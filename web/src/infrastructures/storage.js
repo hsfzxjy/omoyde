@@ -22,7 +22,7 @@ const BUCKET_INFO = {
   Region: import.meta.env.VITE_TCLOUD_COS_REGION,
 }
 
-export const storageBackend = new Resource("storageBackend")
+export const storageClient = new Resource("storageClient")
   .onInit(async (h) => {
     const cred = await storageCredential.readyVal()
     const cos = new COS({
@@ -42,34 +42,32 @@ export const storageBackend = new Resource("storageBackend")
     storageCredential.forceExpire()
     h.reset()
   })
-
-export const storageClient = {
-  async service(name, options) {
-    const backend = await storageBackend.val()
-    const performRequest = () =>
-      new Promise((resolve, reject) => {
-        backend[name]({ ...options, ...BUCKET_INFO }, (err, data) => {
-          if (err) reject(err)
-          else resolve(data)
+  .extend({
+    service(name, options) {
+      const performRequest = () =>
+        new Promise((resolve, reject) => {
+          this[name]({ ...options, ...BUCKET_INFO }, (err, data) => {
+            if (err) reject(err)
+            else resolve(data)
+          })
         })
+      return retryOnNetworkFailure(performRequest, 1000)
+    },
+    async getURL(filePath) {
+      const data = await storageClient.service("getObjectUrl", {
+        Key: filePath,
+        Expires: 3600,
       })
-    return retryOnNetworkFailure(performRequest, 1000)
-  },
-  async getURL(filePath) {
-    const data = await this.service("getObjectUrl", {
-      Key: filePath,
-      Expires: 3600,
-    })
-    return data.Url
-  },
-  async getFileContent({ filePath, dataType }) {
-    const { Body, headers } = await this.service("getObject", {
-      Key: filePath,
-      DataType: dataType,
-    })
-    return {
-      body: Body,
-      headers,
-    }
-  },
-}
+      return data.Url
+    },
+    async getFileContent({ filePath, dataType }) {
+      const { Body, headers } = await storageClient.service("getObject", {
+        Key: filePath,
+        DataType: dataType,
+      })
+      return {
+        body: Body,
+        headers,
+      }
+    },
+  })
