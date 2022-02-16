@@ -1,8 +1,12 @@
 <script setup>
+import BasicFlow from "./BasicFlow.vue"
 </script>
 
 <template>
   <div id="main">
+    <Suspense>
+      <basic-flow />
+    </Suspense>
   </div>
 </template>
 
