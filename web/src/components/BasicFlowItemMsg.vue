@@ -38,6 +38,7 @@ defineExpose({
     position: relative;
     font-size: 4rem;
     font-weight: bold;
+    order: -1;
     &:before,
     &:after {
       content: " ";
