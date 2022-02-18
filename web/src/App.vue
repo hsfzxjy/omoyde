@@ -17,6 +17,10 @@ const mainWrapperClass = computed(() => ({
 </template>
 
 <style lang="scss">
+* {
+  box-sizing: border-box;
+}
+
 html {
   font-size: 20px;
 }
