@@ -1,6 +1,9 @@
 import { createApp } from "vue"
 import App from "./App.vue"
 import { loginWithPassword, unlockWithPincode } from "./infrastructures/auth"
+import { polyfill } from "./utils/polyfill"
+
+polyfill()
 
 createApp(App).mount("#app")
 
