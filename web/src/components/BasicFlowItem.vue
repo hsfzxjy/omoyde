@@ -1,5 +1,6 @@
 <script setup>
 import { computed, inject, onBeforeUnmount, onMounted, ref } from "vue"
+import BasicFlowItemTimeMarker from "./BasicFlowItemTimeMarker.vue"
 import BasicFlowItemImage from "./BasicFlowItemImage.vue"
 import BasicFlowItemMsg from "./BasicFlowItemMsg.vue"
 
@@ -28,6 +29,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="$wrapper" :class="classList" :data-local-index="props.localIndex">
+    <basic-flow-item-time-marker :data="data" />
     <component :is="currentComponent" :data="data" ref="$inner"></component>
   </div>
 </template>
