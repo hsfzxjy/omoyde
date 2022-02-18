@@ -22,7 +22,7 @@ defineExpose({
   display: inline-block;
 
   &.m {
-    margin: 5rem 0;
+    margin: 0.66em 0 0.33em 0;
     text-align: center;
     position: relative;
     font-size: 4rem;
@@ -48,8 +48,7 @@ defineExpose({
 
   &.q {
     align-self: flex-start;
-    margin: 1rem 10%;
-    font-size: 1.8rem !important;
+    font-size: 1.4rem !important;
     font-weight: 500 !important;
   }
 }
