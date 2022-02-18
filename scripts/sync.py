@@ -114,12 +114,26 @@ class ListItem:
     def remote_path(self) -> str:
         return f"assets/{self.path}"
 
+    @property
+    def migrated_local_path(self) -> Path:
+        return Path("assets/_generated") / (self.path + ".migrated")
+
     def sync_myself(self):
+        respect = self.respect
+        if self.migrated_local_path.exists():
+            ans = input(
+                f"Are you sure to overwrite {self.local_path} "
+                f"with {self.migrated_local_path}? (y/n) "
+            )
+            if ans == "y":
+                self.migrated_local_path.rename(self.local_path)
+                respect = "local"
+
         if runcmd("coscmd", "info", self.remote_path).retcode == 255:
             # object not exists on remote
             if not self.local_path.exists():
                 self.local_path.write_bytes(self.default_content)
-        elif self.respect == "remote":
+        elif respect == "remote":
             runcmd("coscmd", "download", "-f", self.remote_path, self.local_path)
 
         runcmd(
