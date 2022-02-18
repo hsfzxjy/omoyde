@@ -67,7 +67,9 @@ export const MSG_MEDIA = {
     let ptr = 0
     let done = false
     const arr = new Uint8Array(content)
-    const textDecoder = new TextDecoder("utf-16be")
+    const textDecoder = new TextDecoder(
+      import.meta.env.VITE_SYSTEM_MSG_ENCODING_JAVASCRIPT
+    )
     return {
       done() {
         return done
