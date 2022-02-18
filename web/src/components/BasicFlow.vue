@@ -114,7 +114,7 @@ const itemsPuller = {
           limit: LIMIT + 1,
           includes: true,
         })
-        currentItems.splice(+Infinity, 0, ...items)
+        currentItems.extend(items)
         if (items.length) {
           const first = items[0]
           patch(tracker, {
@@ -197,7 +197,7 @@ const itemsPuller = {
       if (!items.length) tracker.atEnd = true
       // since new items would be appended, we don't have to mutate localIndex
       // append new items
-      currentItems.splice(+Infinity, 0, ...items)
+      currentItems.extend(items)
       // drop excess items at the front
       const numToSplice = tracker.localIndex - LIMIT
       if (numToSplice > 0) {
