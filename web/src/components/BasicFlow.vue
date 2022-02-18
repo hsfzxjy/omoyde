@@ -106,6 +106,21 @@ onBeforeUnmount(() => {
 
 const itemsPuller = {
   _mutex: new Mutex(),
+  _postprocItems() {
+    const L = currentItems.length
+    if (!L) return
+    let prevDt = tracker.atStart ? -Infinity : undefined
+    for (let i = 0; i < L; i++) {
+      if (prevDt === currentItems[i].prevDt) break
+      currentItems[i].prevDt = prevDt
+      prevDt = currentItems[i].dt
+    }
+    for (let i = L - 1; i >= 1; --i) {
+      prevDt = currentItems[i - 1].dt
+      if (prevDt === currentItems[i].prevDt) break
+      currentItems[i].prevDt = prevDt
+    }
+  },
   initial() {
     return this._mutex
       .guardOrSkip(async () => {
@@ -115,6 +130,7 @@ const itemsPuller = {
           includes: true,
         })
         currentItems.extend(items)
+        this._postprocItems()
         if (items.length) {
           const first = items[0]
           patch(tracker, {
@@ -170,6 +186,7 @@ const itemsPuller = {
         currentItems.splice(-numToSplice, numToSplice)
         tracker.atEnd = false
       }
+      this._postprocItems()
 
       await recoverScrollTop()
     })
@@ -205,6 +222,7 @@ const itemsPuller = {
         tracker.localIndex -= numToSplice
         tracker.atStart = false
       }
+      this._postprocItems()
 
       await recoverScrollTop()
     })
