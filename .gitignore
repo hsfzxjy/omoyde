@@ -305,5 +305,5 @@ config.json
 !/.butler/.gitkeep
 /assets/*
 !/assets/.gitkeep
-/tools/migrate.sh
+/tools/migrate*
 /scripts/static/picker/*.min.css
