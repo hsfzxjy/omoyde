@@ -5,7 +5,7 @@ const props = defineProps({ data: Object })
 const classList = computed(() => ["basic-flow-item-msg", props.data.type])
 
 defineExpose({
-  wrapperClasses: ["msg", props.data.type],
+  wrapperClasses: computed(() => ["msg", props.data.type]),
 })
 </script>
 
