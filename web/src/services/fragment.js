@@ -1,5 +1,5 @@
-import { metaDB } from "./meta"
+import { mediaDB } from "./media/db"
 
 export function getDataSource() {
-  return metaDB
+  return mediaDB
 }
