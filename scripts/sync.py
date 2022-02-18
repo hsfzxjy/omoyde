@@ -164,7 +164,7 @@ def sync_lists():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--img-dirs", "-i", nargs="+", default=["m", "s", "source"])
+    parser.add_argument("--img-dirs", "-i", nargs="*", default=["m", "s", "source"])
     parser.add_argument("--skipmd5", action="store_const", const="--skipmd5")
     opts = parser.parse_args()
     check_local()
