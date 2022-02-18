@@ -16,6 +16,17 @@ defineExpose({
 <style lang="scss">
 @import "../fonts/custom-font.scss";
 
+.basic-flow-item {
+  &.msg.q {
+    padding: 0.8rem 10%;
+
+    + .msg.q {
+      padding-top: 0;
+      margin-top: -0.5rem;
+    }
+  }
+}
+
 .basic-flow-item-msg {
   @extend .custom-font;
 
