@@ -69,7 +69,7 @@ pub fn write_bins<P: AsRef<Path>>(mut metas: Vec<CompressedMeta>, path: P) -> Re
     use byteorder::{BigEndian, WriteBytesExt};
     let mut writer = BufWriter::new(File::create(path)?);
     for meta in metas {
-        writer.write_u32::<BigEndian>(meta.pid)?;
+        writer.write_uint::<BigEndian>(meta.pid.into(), 3)?;
         writer.write_u32::<BigEndian>(meta.timestamp)?;
         writer.write_u8(meta.h)?;
         writer.write_u8(meta.w)?;
