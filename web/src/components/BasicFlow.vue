@@ -140,39 +140,34 @@ const itemsPuller = {
       currentItems[i].prevDt = prevDt
     }
   },
-  initial() {
-    return this._mutex
-      .guardOrSkip(async () => {
-        const items = await dataSource.afterDt({
-          dt: tracker.date,
-          limit: LIMIT + 1,
-          includes: true,
-        })
-        currentItems.extend(items)
-        this._postprocItems()
-        if (items.length) {
-          const first = items[0]
-          patch(tracker, {
-            date: +first.dt,
-            pid: first.pid,
-            offset: 0,
-            localIndex: 0,
-          })
-        }
+  initial(cond) {
+    return this._mutex.guardOrSkip(async () => {
+      const [globalIndex, items] = await dataSource.after({
+        ...cond,
+        limit: LIMIT + 1,
+        includes: true,
+        withFirstIndex: true,
+      })
+      this._preprocItems(items)
+      currentItems.replaceAll(items)
+      this._postprocItems()
+      if (items.length) {
+        const first = items[0]
         patch(tracker, {
-          atStart: false,
-          atEnd: items.length < LIMIT + 1,
+          date: +first.dt,
+          pid: first.pid,
+          offset: 0,
+          localIndex: 0,
         })
+      }
+      patch(tracker, {
+        globalIndex,
+        atStart: false,
+        atEnd: items.length < LIMIT + 1,
       })
-      .finally(() => {
-        watch(
-          () => tracker.localIndex,
-          (newIdx) => {
-            if (!currentItems[newIdx]) return
-            tracker.date = currentItems[newIdx].dt
-          }
-        )
-      })
+
+      await scrollHelper.toTop()
+    })
   },
   forward() {
     return this._mutex.guardOrSkip(async () => {
@@ -250,7 +245,7 @@ const itemsPuller = {
   },
 }
 
-await itemsPuller.initial()
+await itemsPuller.initial({ dt: tracker.date })
 </script>
 
 <template>
