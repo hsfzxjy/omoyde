@@ -32,6 +32,19 @@ function polyfillArray() {
   }
 }
 
+function polyfillNumber() {
+  Number.clamp = function (val, min, max) {
+    if (val < min) {
+      return min
+    } else if (val > max) {
+      return max
+    } else {
+      return val
+    }
+  }
+}
+
 export function polyfill() {
   polyfillArray()
+  polyfillNumber()
 }
