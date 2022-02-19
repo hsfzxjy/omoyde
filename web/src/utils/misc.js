@@ -41,3 +41,4 @@ export function debounce(cb, timeout, setupCtx) {
 }
 
 export const patch = Object.assign
+export const noop = () => {}
