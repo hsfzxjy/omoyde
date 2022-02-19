@@ -19,8 +19,14 @@ export function debounce(cb, timeout, setupCtx) {
   const events = new EventEmitter()
   const handler = {
     ctx: setupCtx(),
-    invoke() {
+    canceled() {
+      return timer === null
+    },
+    cancel() {
       timer && clearTimeout(timer)
+    },
+    invoke() {
+      this.cancel()
       timer = setTimeout(async () => {
         try {
           await cb(handler.ctx)
