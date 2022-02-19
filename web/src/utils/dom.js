@@ -1,6 +1,6 @@
 import { nextTick } from "vue"
 import { Mutex } from "./aio"
-import { debounce } from "./misc"
+import { debounce, noop, stringifyAsKey } from "./misc"
 
 export class ScrollTopRecoverer {
   constructor(scrollableGetter, anchorGetter) {
@@ -44,4 +44,25 @@ export class DebouncedIntersectionObserver extends IntersectionObserver {
   nextTick() {
     return this._deb.nextTick()
   }
+}
+
+export const LS = {
+  setItem(key, value) {
+    key = stringifyAsKey(key)
+    return window.localStorage.setItem(key, JSON.stringify(value))
+  },
+  getItem(key) {
+    key = stringifyAsKey(key)
+    const value = window.localStorage.getItem(key)
+    if (value === null) return null
+    return JSON.parse(value)
+  },
+  hasItem(key) {
+    key = stringifyAsKey(key)
+    return window.localStorage.hasItem(key)
+  },
+  removeItem(key) {
+    key = stringifyAsKey(key)
+    return window.localStorage.removeItem(key)
+  },
 }
