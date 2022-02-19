@@ -5,12 +5,12 @@ class CachedValue {
   constructor(source, backend) {
     this._source = source
     this._backend = backend
-    this._backend.loadValue((v) => this._source.set(v))
     this._onChangedHandler = debounce(
       () => this._backend.storeValue(this._source.getRaw()),
       150
     )
     this._source.onChanged(() => this._onChangedHandler.invoke())
+    this._backend.loadValue((v) => this._source.set(v))
   }
   get() {
     return this._source.get()
@@ -29,6 +29,23 @@ class BaseSource {
   }
   onChanged(cb) {
     this._onChanged = cb
+  }
+}
+
+class NaiveSource extends BaseSource {
+  constructor(value) {
+    super()
+    this._inner = value
+  }
+  get() {
+    return this._inner
+  }
+  getRaw() {
+    return this._inner
+  }
+  set(value) {
+    this._onChanged(value)
+    this._inner = value
   }
 }
 
@@ -77,4 +94,8 @@ class LSBackend {
 
 export function LSRefValue(key, value) {
   return new CachedValue(new RefSource(value), new LSBackend(key))
+}
+
+export function LSValue(key, value) {
+  return new CachedValue(new NaiveSource(value), new LSBackend(key))
 }
