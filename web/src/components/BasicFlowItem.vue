@@ -13,7 +13,7 @@ const componentMapping = {
   msg: BasicFlowItemMsg,
 }
 const currentComponent = computed(() => componentMapping[props.data.kind])
-const classList = computed(() => {
+const classes = computed(() => {
   const classes = ["basic-flow-item"]
   if ($inner.value) classes.extend($inner.value.wrapperClasses)
   return classes
@@ -28,7 +28,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="$wrapper" :class="classList" :data-local-index="props.localIndex">
+  <div ref="$wrapper" :class="classes" :data-local-index="props.localIndex">
     <basic-flow-item-time-marker :data="data" />
     <component :is="currentComponent" :data="data" ref="$inner"></component>
   </div>

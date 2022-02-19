@@ -2,7 +2,7 @@
 import { computed } from "vue"
 
 const props = defineProps({ data: Object })
-const classList = computed(() => ["basic-flow-item-msg", props.data.type])
+const classes = computed(() => ["basic-flow-item-msg", props.data.type])
 
 defineExpose({
   wrapperClasses: computed(() => ["msg", props.data.type]),
@@ -10,7 +10,7 @@ defineExpose({
 </script>
 
 <template>
-  <span :class="classList" ref="$el">{{ props.data.text }}</span>
+  <span :class="classes">{{ props.data.text }}</span>
 </template>
 
 <style lang="scss">
