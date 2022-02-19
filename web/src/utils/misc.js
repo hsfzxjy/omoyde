@@ -1,6 +1,7 @@
 import EventEmitter from "events"
 
 export function stringifyAsKey(keyLike) {
+  if (typeof keyLike === "symbol") keyLike = keyLike.description
   if (Array.isArray(keyLike)) {
     return keyLike.map((v) => v.toString()).join("_")
   }
