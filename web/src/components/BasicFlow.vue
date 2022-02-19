@@ -120,6 +120,11 @@ onBeforeUnmount(() => {
 
 const itemsPuller = {
   _mutex: new Mutex(),
+  _preprocItems(items) {
+    items.forEach((item) => {
+      item.prevDt = null
+    })
+  },
   _postprocItems() {
     const L = currentItems.length
     if (!L) return
@@ -185,6 +190,7 @@ const itemsPuller = {
         dt: currentItems[0].dt,
         limit: breach,
       })
+      this._preprocItems(items)
 
       const recoverScrollTop = scrollHelper.dictate()
 
@@ -221,6 +227,7 @@ const itemsPuller = {
         dt: currentItems.at(-1).dt,
         limit: breach,
       })
+      this._preprocItems(items)
 
       const recoverScrollTop = scrollHelper.dictate()
 
