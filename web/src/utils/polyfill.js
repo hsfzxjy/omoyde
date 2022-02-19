@@ -12,6 +12,10 @@ function polyfillArray() {
     return this.splice.apply(this, [+Infinity, 0].concat(arr))
   }
 
+  Array.prototype.replaceAll = function (arr) {
+    return this.splice.apply(this, [0, +Infinity].concat(arr))
+  }
+
   Array.prototype.zip = function (arr) {
     if (typeof arr[Symbol.iterator] !== "function")
       throw new Error(`expect arr to be iterable, got ${arr}`)
