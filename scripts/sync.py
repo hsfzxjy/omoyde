@@ -6,10 +6,15 @@ import re
 import json
 from pathlib import Path
 from subprocess import Popen, PIPE, DEVNULL
+from wsgiref import headers
 
 root_dir = Path(__file__).parent.parent.absolute()
 config_file = root_dir / "config.json"
 cfg = json.loads(config_file.read_text())
+prefix = (
+    f"{cfg['tcloud']['cos']['bucket']}.cos."
+    f"{cfg['tcloud']['cos']['region']}.myqcloud.com"
+)
 
 
 def _escape_cli_args(args):
@@ -83,12 +88,13 @@ def setup_coscmd():
 
 def upload_generated_photos():
     print("Uploading assets/_generated ...")
+    headers = {"Cache-Control": "private,max-age=15,must-revalidate"}
     for img_dir in opts.img_dirs:
         runcmd(
             "coscmd",
             "upload",
             "-H",
-            {"cache-control": "private,max-age=31536000,immutable"},
+            headers,
             "--sync",
             "--delete",
             "--recursive",
@@ -97,6 +103,18 @@ def upload_generated_photos():
             f"assets/{img_dir}/",
             stdin=["y"],
         )
+        if opts.fix_headers:
+            runcmd(
+                "coscmd",
+                "copy",
+                "-H",
+                headers,
+                "--recursive",
+                "-d",
+                "Replaced",
+                f"{prefix}/assets/{img_dir}",
+                f"/assets/{img_dir}",
+            )
 
 
 @dataclass
@@ -136,16 +154,28 @@ class ListItem:
         elif respect == "remote":
             runcmd("coscmd", "download", "-f", self.remote_path, self.local_path)
 
+        headers = {"Cache-Control": "private,max-age=15,must-revalidate"}
         runcmd(
             "coscmd",
             "upload",
             "--sync",
             "-H",
-            {"cache-control": "private,max-age=31536000"},
+            headers,
             self.local_path,
             self.remote_path,
             accept={0, 255, 254},
         )
+        if opts.fix_headers:
+            runcmd(
+                "coscmd",
+                "copy",
+                "-d",
+                "Replaced",
+                "-H",
+                headers,
+                f"{prefix}/{self.remote_path}",
+                self.remote_path,
+            )
 
         if self.public:
             runcmd("coscmd", "putobjectacl", "--grant-read", "anyone", self.remote_path)
@@ -166,6 +196,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--img-dirs", "-i", nargs="*", default=["m", "s", "source"])
     parser.add_argument("--skipmd5", action="store_const", const="--skipmd5")
+    parser.add_argument("--fix-headers", action="store_true")
     opts = parser.parse_args()
     check_local()
     setup_coscmd()
