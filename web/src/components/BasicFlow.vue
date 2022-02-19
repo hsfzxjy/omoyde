@@ -22,6 +22,13 @@ const tracker = reactive({
   atStart: false,
   atEnd: false,
 })
+watch(
+  () => tracker.localIndex,
+  (newIdx) => {
+    if (!currentItems[newIdx]) return
+    tracker.date = currentItems[newIdx].dt
+  }
+)
 
 trashbin.collect(
   LSRefValue(["basic-flow", store.fragment.currentName, "tracker"], tracker)
