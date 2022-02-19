@@ -7,6 +7,11 @@ export class ScrollHelper {
     this._scrollableGetter = scrollableGetter
     this._anchorGetter = anchorGetter
   }
+  async toTop() {
+    await nextTick()
+    const $scrollable = this._scrollableGetter()
+    if ($scrollable) $scrollable.scrollTop = 0
+  }
   dictate() {
     const $scrollable = this._scrollableGetter()
     const $anchor = this._anchorGetter()
