@@ -51,6 +51,41 @@ export class DebouncedIntersectionObserver extends IntersectionObserver {
   }
 }
 
+export class DebouncedTouchHandler {
+  constructor({
+    $el,
+    onStart = noop,
+    onMove = noop,
+    onHandle = noop,
+    onEnd = noop,
+    setupCtx = noop,
+    options,
+  }) {
+    const { timeout = 150 } = options
+    const mutex = new Mutex()
+    let ctx
+    const deb = debounce(
+      () => mutex.guard(() => !deb.canceled() && onHandle(ctx)),
+      timeout,
+      () => ctx
+    )
+    $el.addEventListener("touchstart", (evt) => {
+      ctx = setupCtx()
+      onStart(evt, ctx)
+    })
+    $el.addEventListener("touchmove", (evt) => {
+      onMove(evt, ctx)
+      deb.invoke()
+    })
+    $el.addEventListener("touchend", (evt) => {
+      mutex.guard(() => {
+        deb.cancel()
+        onEnd(evt, ctx)
+      })
+    })
+  }
+}
+
 export const LS = {
   setItem(key, value) {
     key = stringifyAsKey(key)
