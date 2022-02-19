@@ -9,8 +9,8 @@ class MediaDBInternal {
   constructor(dexie) {
     this._dexie = dexie
   }
-  _transaction(cb) {
-    return this._dexie.transaction("rw", this._dexie.log, this._dexie.data, cb)
+  _transaction(cb, mode = "rw") {
+    return this._dexie.transaction(mode, this._dexie.log, this._dexie.data, cb)
   }
   async _isLocalExpired(kind, remoteTS) {
     const record = await this._dexie.log.get(kind)
