@@ -107,7 +107,7 @@ export class Resource {
     for (const [name, fn] of Object.entries(methods)) {
       this[name] = async function (...rest) {
         const val = await this.val()
-        if (fn === "proxy") {
+        if (fn === Proxy) {
           return val[name].apply(val, rest)
         } else {
           return fn.apply(val, rest)
