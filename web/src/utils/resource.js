@@ -1,4 +1,5 @@
 import EventEmitter from "events"
+import { LS } from "./dom"
 import { stringifyAsKey } from "./misc"
 
 const STATE_CREATED = Symbol("STATE_CREATED")
@@ -263,19 +264,19 @@ export class LSResource extends Resource {
   }
 
   _loadValue() {
-    const value = window.localStorage.getItem(this._key)
+    const value = LS.getItem(this._key)
     if (value !== null) {
-      this._value = JSON.parse(value)
+      this._value = value
       this._to(STATE_READY)
       this._poll()
     }
   }
 
   _saveValue() {
-    window.localStorage.setItem(this._key, JSON.stringify(this._value))
+    LS.setItem(this._key, this._value)
   }
 
   _eraseValue() {
-    window.localStorage.removeItem(this._key)
+    LS.removeItem(this._key)
   }
 }
