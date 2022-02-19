@@ -2,7 +2,7 @@ import { nextTick } from "vue"
 import { Mutex } from "./aio"
 import { debounce, noop, stringifyAsKey } from "./misc"
 
-export class ScrollTopRecoverer {
+export class ScrollHelper {
   constructor(scrollableGetter, anchorGetter) {
     this._scrollableGetter = scrollableGetter
     this._anchorGetter = anchorGetter

@@ -5,7 +5,7 @@ import { onBeforeUnmount, onMounted, provide, reactive, ref, watch } from "vue"
 import { getDataSource } from "../services/fragment"
 import { store } from "../states"
 import { Mutex } from "../utils/aio"
-import { DebouncedIntersectionObserver, ScrollTopRecoverer } from "../utils/dom"
+import { DebouncedIntersectionObserver, ScrollHelper } from "../utils/dom"
 import { patch } from "../utils/misc"
 import { TrashBin } from "../utils/trashbin"
 import { LSRefValue } from "../utils/value"
@@ -90,7 +90,7 @@ const itemObserver = new DebouncedIntersectionObserver({
 })
 provide("basic-flow-observer", itemObserver)
 
-const scrollTopRecoverer = new ScrollTopRecoverer(
+const scrollHelper = new ScrollHelper(
   () => $flowContainer.value,
   () => $flowList.value.children[tracker.localIndex]
 )
@@ -172,7 +172,7 @@ const itemsPuller = {
         limit: breach,
       })
 
-      const recoverScrollTop = scrollTopRecoverer.dictate()
+      const recoverScrollTop = scrollHelper.dictate()
 
       // if no new items, we reach the very beginning
       if (!items.length) tracker.atStart = true
@@ -208,7 +208,7 @@ const itemsPuller = {
         limit: breach,
       })
 
-      const recoverScrollTop = scrollTopRecoverer.dictate()
+      const recoverScrollTop = scrollHelper.dictate()
 
       // if no new items, we reach the very end
       if (!items.length) tracker.atEnd = true
