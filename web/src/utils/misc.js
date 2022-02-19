@@ -8,6 +8,21 @@ export function stringifyAsKey(keyLike) {
   return keyLike.toString()
 }
 
+export function keyBuilder(prefix, type) {
+  if (!Array.isArray(prefix)) prefix = [prefix]
+  return function (...rest) {
+    const key = stringifyAsKey(prefix.concat(rest))
+    switch (type) {
+      case String:
+        return key
+      case Symbol:
+        return Symbol(key)
+      default:
+        throw new Error(`unsupport key type: ${type}`)
+    }
+  }
+}
+
 export function randomRange(low, high) {
   const v = Math.random()
   return low + (high - low) * v
