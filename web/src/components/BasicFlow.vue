@@ -10,6 +10,7 @@ import { patch } from "../utils/misc"
 import { TrashBin } from "../utils/trashbin"
 import { LSRefValue } from "../utils/value"
 import BasicFlowItem from "./BasicFlowItem.vue"
+import BasicFlowTracker from "./BasicFlowTracker.vue"
 
 const trashbin = new TrashBin()
 const dataSource = getDataSource()
@@ -117,6 +118,10 @@ onBeforeUnmount(() => {
   sentinelObserver.disconnect()
   itemObserver.disconnect()
 })
+
+function onUpdateIndex(index) {
+  return itemsPuller.initial({ index })
+}
 
 const itemsPuller = {
   _mutex: new Mutex(),
@@ -250,6 +255,12 @@ await itemsPuller.initial({ dt: tracker.date })
 
 <template>
   <div ref="$flowContainer" class="basic-flow">
+    <suspense>
+      <basic-flow-tracker
+        :currentItemGlobalIndex="tracker.globalIndex"
+        @updateIndex="onUpdateIndex"
+      />
+    </suspense>
     <div
       ref="$topSentinel"
       class="basic-flow-sentinel basic-flow-sentinel-top"
