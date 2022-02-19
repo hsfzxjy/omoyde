@@ -54,7 +54,7 @@ export const mediaDB = new Resource("mediaDB")
     const dexie = new Dexie("media")
     dexie
       .version(DB_VERSION)
-      .stores({ data: "++id, dt, kind", log: "kind, time" })
+      .stores({ data: "++id, dt, kind, type", log: "kind, time" })
     dexie.open()
     const internal = new MediaDBInternal(dexie)
     await internal.init()
