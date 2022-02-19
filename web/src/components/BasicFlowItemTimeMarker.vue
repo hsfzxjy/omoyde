@@ -11,11 +11,14 @@ const visibility = computed(() => {
   const delta = dt - prevDt
   dt = new Date(dt)
   prevDt = new Date(prevDt)
+  const showTime = delta >= 1000 * 60 * 30 // 30 minutes
   return {
-    year: dt.getFullYear() !== prevDt.getFullYear(),
+    year: showTime && dt.getFullYear() !== prevDt.getFullYear(),
     date:
-      dt.getMonth() !== prevDt.getMonth() || dt.getDate() !== prevDt.getDate(),
-    time: delta >= 1000 * 60 * 30, // 30 minutes
+      showTime &&
+      (dt.getMonth() !== prevDt.getMonth() ||
+        dt.getDate() !== prevDt.getDate()),
+    time: showTime,
   }
 })
 const texts = computed(() => {
