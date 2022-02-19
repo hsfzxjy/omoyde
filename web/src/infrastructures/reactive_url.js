@@ -7,7 +7,11 @@ export function ReactiveURL(filePath) {
       const version = storageClient.version()
       let url
       try {
-        url = await storageClient.getURL(filePath)
+        const { body } = await storageClient.getFileContent({
+          filePath,
+          dataType: "blob",
+        })
+        url = window.URL.createObjectURL(body)
       } catch (e) {
         storageClient.expire(version)
         throw e
