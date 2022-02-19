@@ -1,10 +1,14 @@
 import Dexie from "dexie"
 import EventEmitter from "events"
 import { LSCache } from "../../utils/cache"
+import { dispatch, keyBuilder } from "../../utils/misc"
 import { Resource } from "../../utils/resource"
 import { allMedias } from "./grocery"
 
 const DB_VERSION = 1
+
+const build_cache_key = keyBuilder(["mediaDB", "cache"], Symbol)
+const CE_HIGHLIGHTED_INDICES = build_cache_key("highlighted_indices")
 
 // TODO: better name
 class MediaDBInternal {
@@ -80,8 +84,63 @@ export const mediaDB = new Resource("mediaDB")
         .sortBy("dt")
         .then((data) => data.reverse())
     },
-    afterDt({ dt, limit = 10, includes = false }) {
+    after: dispatch(
+      {
+        index: "afterIndex",
+        dt: "afterDt",
+      },
+      () => mediaDB
+    ),
+    async afterIndex({
+      index,
+      limit = 10,
+      includes = false,
+      withFirstIndex = false,
+    }) {
+      if (!includes) index++
+      const items = await this._dexie.data
+        .orderBy("dt")
+        .offset(index)
+        .limit(limit)
+        .toArray()
+      return withFirstIndex ? [index, items] : items
+    },
+    async afterDt({
+      dt,
+      limit = 10,
+      includes = false,
+      withFirstIndex = false,
+    }) {
       const opName = includes ? "aboveOrEqual" : "above"
-      return this._dexie.data.where("dt")[opName](dt).limit(limit).sortBy("dt")
+      const items = await this._dexie.data
+        .where("dt")
+        [opName](dt)
+        .limit(limit)
+        .sortBy("dt")
+      if (!withFirstIndex) return items
+      const revOpName = includes ? "below" : "belowOrEqual"
+      const count = await this._dexie.data.where("dt")[revOpName](dt).count()
+      return [count, items]
+    },
+    async countAll() {
+      return await this._dexie.data.count()
+    },
+    async at(index) {
+      return await this._dexie.data.orderBy("dt").offset(index).first()
+    },
+    async getHighlightedIndices() {
+      const hit = this.cache.get(CE_HIGHLIGHTED_INDICES)
+      if (hit !== null) return hit
+
+      const highlightedIds = new Set(
+        await this._dexie.data.where("type").equals("m").primaryKeys()
+      )
+      const allIds = await this._dexie.data.orderBy("dt").primaryKeys()
+      const ret = []
+      for (let idx = 0; idx < allIds.length; idx++) {
+        if (highlightedIds.has(allIds[idx])) ret.push(idx)
+      }
+      this.cache.set(CE_HIGHLIGHTED_INDICES, ret)
+      return ret
     },
   })
