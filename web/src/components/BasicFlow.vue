@@ -242,7 +242,7 @@ await itemsPuller.initial()
       <basic-flow-item
         v-for="(item, index) in currentItems"
         :localIndex="index"
-        :key="item.pid"
+        :key="item.id"
         :data="item"
       />
     </div>
