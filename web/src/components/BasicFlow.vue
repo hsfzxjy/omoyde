@@ -19,6 +19,7 @@ const tracker = reactive({
   pid: 0,
   offset: 0,
   localIndex: 0,
+  globalIndex: 0,
   atStart: false,
   atEnd: false,
 })
@@ -69,7 +70,13 @@ const itemObserver = new DebouncedIntersectionObserver({
   },
   handle(ctx) {
     const set = (localIndex, offset) => {
-      patch(tracker, { localIndex, offset })
+      const oldLocalIndex = tracker.localIndex
+      const oldGlobalIndex = tracker.globalIndex
+      patch(tracker, {
+        localIndex,
+        offset,
+        globalIndex: localIndex - oldLocalIndex + oldGlobalIndex,
+      })
     }
     for (let i = ctx.min; i <= ctx.max; i++) {
       const entry = ctx.entries.get(i)
