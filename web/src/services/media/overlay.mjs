@@ -26,7 +26,7 @@
 //
 // As of concrete examples, check test_overlay.mjs.
 
-import { dispatch } from "../../utils/misc"
+import { dispatch, patch } from "../../utils/misc"
 
 export function Bridge(bottom_size, adds, dels) {
   let size =
@@ -255,6 +255,16 @@ export class OverlayDS {
     this.remove(index, index)
     this.insert(index, [item])
     console.log(this._bridge._internal())
+  }
+  inplaceMutate(index, item) {
+    const [_0, _1, [x]] = this._bridge.range_t2b(index, index, true)
+    if (x.handle) {
+      item.id = Symbol()
+      patch(x.item, item)
+    } else {
+      this.remove(index, index)
+      this.insert(index - 1, [item])
+    }
   }
   countAll() {
     return this._bridge.size()
