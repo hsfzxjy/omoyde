@@ -74,6 +74,20 @@ export const mediaDB = new Resource("mediaDB")
   })
   .extend({
     invalidate: Proxy,
+    before: dispatch({ index: "beforeIndex", dt: "beforeDt" }, () => mediaDB),
+    beforeIndex({ index, limit = 10, includes = false }) {
+      let end = index
+      if (!includes) end--
+      let start = Math.max(end - limit + 1, 0)
+      limit = Math.max(end - start + 1, 0)
+      if (!limit) return []
+      const items = this._dexie.data
+        .orderBy("dt")
+        .offset(start)
+        .limit(limit)
+        .toArray()
+      return items
+    },
     beforeDt({ dt, limit = 10, includes = false }) {
       const opName = includes ? "belowOrEqual" : "below"
       return this._dexie.data
