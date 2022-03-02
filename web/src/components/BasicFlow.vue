@@ -12,6 +12,7 @@ import { TrashBin } from "../utils/trashbin"
 import { LSRefValue } from "../utils/value"
 import BasicFlowItem from "./BasicFlowItem.vue"
 import BasicFlowTracker from "./BasicFlowTracker.vue"
+import { MediaLocalView } from "../services/media/local"
 
 const trashbin = new TrashBin()
 const dataSource = await getDataSource()
@@ -111,8 +112,9 @@ provide("basic-flow-observer", itemObserver)
 
 const scrollHelper = new ScrollHelper(
   () => $flowContainer.value,
-  () => $flowList.value.children[tracker.localIndex]
+  () => $itemElAt(tracker.localIndex)
 )
+const $itemElAt = (idx) => $flowList.value.children[idx]
 
 onMounted(() => {
   sentinelObserver.observe($topSentinel.value)
@@ -129,127 +131,48 @@ flowBus.on("update-index", (index, anchorLocalIndex) => {
 
 const itemsPuller = {
   _mutex: new Mutex(),
-  _preprocItems(items) {
-    items.forEach((item) => {
-      item.prevDt = null
-    })
-  },
-  _postprocItems() {
-    const L = currentItems.length
-    if (!L) return
-    let prevDt = tracker.atStart ? -Infinity : undefined
-    for (let i = 0; i < L; i++) {
-      if (prevDt === currentItems[i].prevDt) break
-      currentItems[i].prevDt = prevDt
-      prevDt = currentItems[i].dt
-    }
-    for (let i = L - 1; i >= 1; --i) {
-      prevDt = currentItems[i - 1].dt
-      if (prevDt === currentItems[i].prevDt) break
-      currentItems[i].prevDt = prevDt
-    }
-  },
-  initial(cond) {
+  _localView: new MediaLocalView({
+    dataSource,
+    items: currentItems,
+    tracker,
+    limit: LIMIT,
+  }),
+  jumpTo({ targetIndex, anchorLocalIndex = null, initial = false }) {
     return this._mutex.guardOrSkip(async () => {
-      const [globalIndex, items] = await dataSource.after({
-        ...cond,
-        limit: LIMIT + 1,
-        includes: true,
-        withFirstIndex: true,
-      })
-      this._preprocItems(items)
-      currentItems.replaceAll(items)
-      this._postprocItems()
-      if (items.length) {
-        const first = items[0]
-        patch(tracker, {
-          date: +first.dt,
-          pid: first.pid,
-          offset: 0,
-          localIndex: 0,
-        })
+      if (initial) {
+        await this._localView.jumpTo({ targetIndex, loadForward: false })
+      } else {
+        const recoverScrollTop = scrollHelper.dictate(
+          () => anchorLocalIndex && $itemElAt(anchorLocalIndex)
+        )
+        await this._localView.jumpTo({ targetIndex, loadForward: true })
+        await recoverScrollTop(() => $itemElAt(tracker.localIndex))
       }
-      patch(tracker, {
-        globalIndex,
-        atStart: false,
-        atEnd: items.length < LIMIT + 1,
-      })
-
-      await scrollHelper.toTop()
+      sentinelObserver.holdOn()
     })
   },
   forward() {
     return this._mutex.guardOrSkip(async () => {
-      // no more items to pull
-      if (tracker.atStart) return
-
       // wait until localIndex become fresh
       await itemObserver.nextTick()
 
-      const breach = LIMIT - tracker.localIndex
-      // items are adequate, no need to pull
-      if (breach <= 0) return
-
-      const items = await dataSource.beforeDt({
-        dt: currentItems[0].dt,
-        limit: breach,
-      })
-      this._preprocItems(items)
-
       const recoverScrollTop = scrollHelper.dictate()
 
-      // if no new items, we reach the very beginning
-      if (!items.length) tracker.atStart = true
-      // new items would be prepended, so we increase localIndex
-      tracker.localIndex += items.length
-      // prepend new items
-      currentItems.unshift.apply(currentItems, items)
-      // drop redundant items at the tail
-      const numToSplice = currentItems.length - 1 - tracker.localIndex - LIMIT
-      if (numToSplice > 0) {
-        currentItems.splice(-numToSplice, numToSplice)
-        tracker.atEnd = false
+      if (await this._localView.loadForward()) {
+        await recoverScrollTop()
       }
-      this._postprocItems()
-
-      await recoverScrollTop()
     })
   },
   backward() {
     return this._mutex.guardOrSkip(async () => {
-      // no more items to pull
-      if (tracker.atEnd) return
-
       // wait until localIndex become fresh
       await itemObserver.nextTick()
 
-      const breach = LIMIT - (currentItems.length - 1 - tracker.localIndex)
-      // items are adequate, no need to pull
-      if (breach <= 0) return
-
-      const items = await dataSource.afterDt({
-        dt: currentItems.at(-1).dt,
-        limit: breach,
-      })
-      this._preprocItems(items)
-
       const recoverScrollTop = scrollHelper.dictate()
 
-      // if no new items, we reach the very end
-      if (!items.length) tracker.atEnd = true
-      // since new items would be appended, we don't have to mutate localIndex
-      // append new items
-      currentItems.extend(items)
-      // drop excess items at the front
-      const numToSplice = tracker.localIndex - LIMIT
-      if (numToSplice > 0) {
-        currentItems.splice(0, numToSplice)
-        tracker.localIndex -= numToSplice
-        tracker.atStart = false
+      if (await this._localView.loadBackward()) {
+        await recoverScrollTop()
       }
-      this._postprocItems()
-
-      await recoverScrollTop()
     })
   },
 }
