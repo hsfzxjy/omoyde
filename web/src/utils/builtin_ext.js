@@ -1,4 +1,4 @@
-function polyfillArray() {
+function extendArray() {
   Array.prototype.aFilter = async function (cb) {
     const results = await this.aMap(cb)
     return this.filter((_, index) => results[index])
@@ -32,7 +32,7 @@ function polyfillArray() {
   }
 }
 
-function polyfillNumber() {
+function extendNumber() {
   Number.clamp = function (val, min, max) {
     if (val < min) {
       return min
@@ -44,7 +44,7 @@ function polyfillNumber() {
   }
 }
 
-export function polyfill() {
-  polyfillArray()
-  polyfillNumber()
+export function extendBuiltins() {
+  extendArray()
+  extendNumber()
 }

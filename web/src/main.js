@@ -2,9 +2,9 @@ import { createApp } from "vue"
 import App from "./App.vue"
 import { loginWithPassword, unlockWithPincode } from "./infrastructures/auth"
 import { store } from "./states"
-import { polyfill } from "./utils/polyfill"
+import { extendBuiltins } from "./utils/builtin_ext"
 
-polyfill()
+extendBuiltins()
 
 createApp(App).mount("#app")
 
