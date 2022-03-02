@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue"
 import { ITEM_NULL } from "../services/media/local"
+import { timeGapIsLarge } from "../services/media/misc"
 
 const props = defineProps({ data: Object })
 const visibility = computed(() => {
@@ -10,10 +11,9 @@ const visibility = computed(() => {
     return { year: show, date: show, time: show }
   }
   let prevDt = prev[0].dt
-  const delta = dt - prevDt
+  const showTime = timeGapIsLarge(dt, prevDt)
   dt = new Date(dt)
   prevDt = new Date(prevDt)
-  const showTime = delta >= 1000 * 60 * 30 // 30 minutes
   return {
     year: showTime && dt.getFullYear() !== prevDt.getFullYear(),
     date:
