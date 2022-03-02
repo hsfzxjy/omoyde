@@ -144,6 +144,7 @@ const itemsPuller = {
   jumpTo({ targetIndex, anchorLocalIndex = null, initial = false }) {
     return this._mutex.guardOrSkip(async () => {
       if (initial) {
+        patch(tracker, { atStart: false, atEnd: false })
         await this._localView.jumpTo({ targetIndex, loadForward: false })
       } else {
         const recoverScrollTop = scrollHelper.dictate(
