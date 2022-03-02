@@ -1,9 +1,8 @@
 <script setup>
-import { computed, inject, toRaw } from "vue"
+import { computed, inject } from "vue"
 import { ITEM_NULL, ITEM_UNKNOWN } from "../services/media/local"
 import { moveBackward, moveForward } from "../services/media/misc"
 import { store } from "../states"
-import { clone } from "../utils/misc"
 
 const props = defineProps({
   data: Object,
