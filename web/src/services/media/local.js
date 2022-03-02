@@ -144,7 +144,7 @@ export class MediaLocalView {
     this._annotator.preproc(items)
 
     // if no new items, we reach the very end
-    if (!items.length) tracker.atEnd = true
+    if (items.length < breach) tracker.atEnd = true
     // since new items would be appended, we don't have to mutate localIndex
     // append new items
     this._items.extend(items)
