@@ -258,34 +258,39 @@ await itemsPuller.initial({ dt: tracker.date })
 </script>
 
 <template>
-  <div ref="$flowContainer" class="basic-flow">
-    <suspense>
-      <basic-flow-tracker
-        :currentItemGlobalIndex="tracker.globalIndex"
-        @updateIndex="onUpdateIndex"
-      />
-    </suspense>
-    <div
-      ref="$topSentinel"
-      class="basic-flow-sentinel basic-flow-sentinel-top"
-    ></div>
-    <div ref="$flowList" class="basic-flow-list">
-      <basic-flow-item
-        v-for="(item, index) in currentItems"
-        :localIndex="index"
-        :key="item.id"
-        :data="item"
-      />
+  <div class="basic-flow-wrapper">
+    <div ref="$flowContainer" class="basic-flow-container">
+      <div
+        ref="$topSentinel"
+        class="basic-flow-sentinel basic-flow-sentinel-top"
+      ></div>
+      <div ref="$flowList" class="basic-flow-list">
+        <basic-flow-item
+          v-for="(item, index) in currentItems"
+          :localIndex="index"
+          :globalIndex="tracker.globalIndex - tracker.localIndex + index"
+          :key="item.id"
+          :data="item"
+        />
+      </div>
+      <div
+        ref="$bottomSentinel"
+        class="basic-flow-sentinel basic-flow-sentinel-bottom"
+      ></div>
     </div>
-    <div
-      ref="$bottomSentinel"
-      class="basic-flow-sentinel basic-flow-sentinel-bottom"
-    ></div>
+    <suspense>
+      <basic-flow-tracker :currentItemGlobalIndex="tracker.globalIndex" />
+    </suspense>
   </div>
 </template>
 
 <style lang="scss">
-.basic-flow {
+.basic-flow-wrapper {
+  position: relative;
+  height: 100%;
+  max-height: 100%;
+}
+.basic-flow-container {
   position: relative;
   height: 100%;
   max-height: 100%;

@@ -73,22 +73,20 @@ const endText = "NOW"
 </script>
 
 <template>
-  <teleport to="#main">
-    <div class="basic-flow-tracker" ref="$container">
-      <div class="basic-flow-tracker-start">{{ startText }}</div>
-      <div class="basic-flow-tracker-main" ref="$main">
-        <div class="basic-flow-tracker-axis"></div>
-        <basic-flow-tracker-annotations />
-        <div class="basic-flow-tracker-thumb" :style="thumbStyle">
-          <basic-flow-tracker-indicator
-            v-if="state.touching"
-            :item="state.touchingItem"
-          />
-        </div>
+  <div class="basic-flow-tracker" ref="$container">
+    <div class="basic-flow-tracker-start">{{ startText }}</div>
+    <div class="basic-flow-tracker-main" ref="$main">
+      <div class="basic-flow-tracker-axis"></div>
+      <basic-flow-tracker-annotations />
+      <div class="basic-flow-tracker-thumb" :style="thumbStyle">
+        <basic-flow-tracker-indicator
+          v-if="state.touching"
+          :item="state.touchingItem"
+        />
       </div>
-      <div class="basic-flow-tracker-end">{{ endText }}</div>
     </div>
-  </teleport>
+    <div class="basic-flow-tracker-end">{{ endText }}</div>
+  </div>
 </template>
 
 <style lang="scss">
