@@ -1,6 +1,7 @@
 import { createApp } from "vue"
 import App from "./App.vue"
 import { loginWithPassword, unlockWithPincode } from "./infrastructures/auth"
+import { store } from "./states"
 import { polyfill } from "./utils/polyfill"
 
 polyfill()
@@ -16,6 +17,9 @@ if (import.meta.env.MODE === "development") {
         break
       case "L":
         loginWithPassword(import.meta.env.VITE_SECURITY_PASSWORD)
+        break
+      case "E":
+        store.fragment.editting = !store.fragment.editting
         break
     }
   })
