@@ -62,6 +62,23 @@ export function debounce(cb, timeout, setupCtx) {
   return handler
 }
 
+export class Tumbler {
+  constructor({ init, timeout }) {
+    this._deb = debounce(() => {
+      this._value = init()
+    }, timeout)
+    this._init = init
+    this._value = init()
+  }
+  value() {
+    return this._value
+  }
+  mutate(newValue) {
+    this._value = newValue
+    this._deb.invoke()
+  }
+}
+
 export function dispatch(routes, thisArg) {
   const keys = Object.keys(routes)
   return function (options) {
