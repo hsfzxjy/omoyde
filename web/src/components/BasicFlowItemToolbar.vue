@@ -1,6 +1,7 @@
 <script setup>
 import { computed, inject, toRaw } from "vue"
 import { ITEM_NULL, ITEM_UNKNOWN } from "../services/media/local"
+import { moveBackward, moveForward } from "../services/media/misc"
 import { store } from "../states"
 import { clone } from "../utils/misc"
 
@@ -23,24 +24,17 @@ const showMoveDown = computed(() => {
   return next0.kind !== ITEM_NULL && next1.kind !== ITEM_UNKNOWN
 })
 
-function detachedItem() {
-  const item = clone(toRaw(props.data))
-  delete item.prevDt
-  delete item.dt
-  return item
-}
-
 function onMoveUp() {
   const index = props.globalIndex
   if (index === 0) return
-  dataSource.moveForward(index, detachedItem())
-  flowBus.emit("update-index", index - 1, props.localIndex)
+  const newIndex = moveForward(dataSource, index, props.data)
+  flowBus.emit("update-index", newIndex, props.localIndex)
 }
 function onMoveDown() {
   const index = props.globalIndex
   if (index === dataSource.countAll() - 1) return
-  dataSource.moveBackward(index, detachedItem())
-  flowBus.emit("update-index", index + 1, props.localIndex)
+  const newIndex = moveBackward(dataSource, index, props.data)
+  flowBus.emit("update-index", newIndex, props.localIndex)
 }
 </script>
 
