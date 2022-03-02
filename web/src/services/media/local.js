@@ -88,7 +88,7 @@ export class MediaLocalView {
     }
     patch(this._tracker, {
       globalIndex: globalIndex + nForward,
-      atStart: !loadForward && nForward === targetIndex,
+      atStart: targetIndex === nForward,
       atEnd: items.length < this._limit + 1 + nForward,
     })
   }
