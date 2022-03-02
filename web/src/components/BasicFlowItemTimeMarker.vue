@@ -1,13 +1,15 @@
 <script setup>
 import { computed } from "vue"
+import { ITEM_NULL } from "../services/media/local"
 
 const props = defineProps({ data: Object })
 const visibility = computed(() => {
-  let { dt, prevDt } = props.data
-  if (!Number.isFinite(prevDt)) {
-    const show = prevDt === Number.NEGATIVE_INFINITY
+  let { dt, prev } = props.data
+  if (typeof prev[0].kind === "symbol") {
+    const show = prev[0].kind === ITEM_NULL
     return { year: show, date: show, time: show }
   }
+  let prevDt = prev[0].dt
   const delta = dt - prevDt
   dt = new Date(dt)
   prevDt = new Date(prevDt)
