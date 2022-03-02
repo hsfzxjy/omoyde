@@ -34,6 +34,9 @@ export class Mutex {
   constructor() {
     this._deferred = new Deferred()
   }
+  isLocked() {
+    return this._deferred.pending()
+  }
   async lock() {
     while (this._deferred.pending()) {
       await this._deferred.wait()
