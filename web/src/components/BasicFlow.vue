@@ -1,7 +1,7 @@
 <script setup>
 /* this component should be recycled after dataSource changed */
 
-import { onBeforeUnmount, onMounted, provide, reactive, ref, watch } from "vue"
+import { onBeforeUnmount, onMounted, provide, reactive, ref } from "vue"
 import EventEmitter from "events"
 import { getDataSource } from "../services/fragment"
 import { store } from "../states"
