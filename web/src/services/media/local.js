@@ -110,7 +110,7 @@ export class MediaLocalView {
     this._annotator.preproc(items)
 
     // if no new items, we reach the very beginning
-    if (!items.length) tracker.atStart = true
+    if (items.length < breach) tracker.atStart = true
     // new items would be prepended, so we increase localIndex
     tracker.localIndex += items.length
     // prepend new items
