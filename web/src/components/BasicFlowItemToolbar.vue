@@ -18,10 +18,18 @@ const showMoveUp = computed(() => {
   const [prev0, prev1] = props.data.prev
   return prev0.kind !== ITEM_NULL && prev1.kind !== ITEM_UNKNOWN
 })
+const moveUpClasses = computed(() => ({
+  ["basic-flow-item-toolbar-button"]: true,
+  hide: !showMoveUp.value,
+}))
 const showMoveDown = computed(() => {
   const [next0, next1] = props.data.next
   return next0.kind !== ITEM_NULL && next1.kind !== ITEM_UNKNOWN
 })
+const moveDownClasses = computed(() => ({
+  ["basic-flow-item-toolbar-button"]: true,
+  hide: !showMoveDown.value,
+}))
 
 function onMoveUp() {
   const index = props.globalIndex
@@ -45,20 +53,8 @@ function onMoveDown() {
         <div class="basic-flow-item-toolbar-button">EDIT</div>
         <div class="basic-flow-item-toolbar-button">DEL</div>
         <div class="basic-flow-item-toolbar-splitter"></div>
-        <div
-          class="basic-flow-item-toolbar-button"
-          @click="onMoveDown"
-          v-if="showMoveDown"
-        >
-          DOWN
-        </div>
-        <div
-          class="basic-flow-item-toolbar-button"
-          @click="onMoveUp"
-          v-if="showMoveUp"
-        >
-          UP
-        </div>
+        <div :class="moveDownClasses" @click="onMoveDown">DOWN</div>
+        <div :class="moveUpClasses" @click="onMoveUp">UP</div>
       </template>
     </div>
     <div class="basic-flow-item-toolbar bottom">
@@ -114,5 +110,9 @@ function onMoveDown() {
   padding: 0.5rem;
   text-align: center;
   background-color: #ddd;
+
+  &.hide {
+    visibility: hidden;
+  }
 }
 </style>
