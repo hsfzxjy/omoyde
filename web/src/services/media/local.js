@@ -76,7 +76,7 @@ export class MediaLocalView {
 
     this._annotator.preproc(items)
     this._items.replaceAll(items)
-    this._annotator.postproc()
+
     if (items.length) {
       const first = items[0]
       patch(this._tracker, {
@@ -91,6 +91,8 @@ export class MediaLocalView {
       atStart: targetIndex === nForward,
       atEnd: items.length < this._limit + 1 + nForward,
     })
+
+    this._annotator.postproc()
   }
 
   async loadForward() {
