@@ -68,4 +68,16 @@ export class Mutex {
       this.unlock()
     }
   }
+  async guardOrWait(cb) {
+    const success = this.tryLock(false)
+    if (!success) {
+      await this._deferred.wait()
+      return
+    }
+    try {
+      return await cb()
+    } finally {
+      this.unlock()
+    }
+  }
 }
