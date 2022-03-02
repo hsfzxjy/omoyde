@@ -102,3 +102,47 @@ export function dispatch(routes, thisArg) {
 
 export const patch = Object.assign
 export const noop = () => {}
+
+// adapted from: https://stackoverflow.com/a/4460624/3278171
+export function clone(item) {
+  // null, undefined values check
+  if (!item) return item
+
+  const types = [Number, String, Boolean]
+  let result
+
+  // normalizing primitives if someone did new String('aaa'), or new Number('444');
+  types.forEach((type) => {
+    if (item instanceof type) {
+      result = type(item)
+    }
+  })
+
+  if (result !== undefined) return result
+
+  if (Array.isArray(item)) {
+    result = item.map((child) => clone(child))
+  } else if (typeof item === "object") {
+    // testing that this is DOM
+    if (item.nodeType && typeof item.cloneNode === "function") {
+      result = item.cloneNode(true)
+    } else if (!item.prototype) {
+      // check that this is a literal
+      if (item instanceof Date) {
+        result = new Date(item)
+      } else {
+        // it is an object literal
+        result = {}
+        for (const i in item) {
+          result[i] = clone(item[i])
+        }
+      }
+    } else {
+      result = item
+    }
+  } else {
+    result = item
+  }
+
+  return result
+}
