@@ -1,7 +1,11 @@
 <script setup>
 import { computed, inject } from "vue"
 import { ITEM_NULL, ITEM_UNKNOWN } from "../services/media/local"
-import { moveBackward, moveForward } from "../services/media/misc"
+import {
+  moveBackward,
+  moveForward,
+  timeGapIsLarge,
+} from "../services/media/misc"
 import { store } from "../states"
 
 const props = defineProps({
@@ -30,6 +34,13 @@ const moveDownClasses = computed(() => ({
   ["basic-flow-item-toolbar-button"]: true,
   hide: !showMoveDown.value,
 }))
+const showBottomToolbar = computed(() => {
+  const { dt, next } = props.data
+  return (
+    next[0].kind === ITEM_NULL ||
+    (next[0].kind !== ITEM_UNKNOWN && timeGapIsLarge(next[0].dt, dt))
+  )
+})
 
 function onMoveUp() {
   const index = props.globalIndex
@@ -58,7 +69,9 @@ function onMoveDown() {
       </template>
     </div>
     <div class="basic-flow-item-toolbar bottom">
-      <div class="basic-flow-item-toolbar-button">ADD</div>
+      <template v-if="showBottomToolbar">
+        <div class="basic-flow-item-toolbar-button">ADD</div>
+      </template>
     </div>
     <div class="basic-flow-item-toolbar spacing"></div>
     <div class="basic-flow-item-brace"></div>
