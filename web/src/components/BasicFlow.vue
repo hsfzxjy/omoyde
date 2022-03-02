@@ -7,7 +7,7 @@ import { getDataSource } from "../services/fragment"
 import { store } from "../states"
 import { Mutex } from "../utils/aio"
 import { DebouncedIntersectionObserver, ScrollHelper } from "../utils/dom"
-import { patch } from "../utils/misc"
+import { patch, Tumbler } from "../utils/misc"
 import { TrashBin } from "../utils/trashbin"
 import { LSRefValue } from "../utils/value"
 import BasicFlowItem from "./BasicFlowItem.vue"
@@ -58,11 +58,22 @@ const sentinelObserver = new DebouncedIntersectionObserver({
     }
   },
   async handle(ctx) {
+    if (ctx.holdOn.value()) return
+
     if (ctx.bottom) await itemsPuller.backward()
     if (ctx.top) await itemsPuller.forward()
   },
-  setupCtx: () => ({ top: false, bottom: false }),
+  setupCtx: () => ({
+    top: false,
+    bottom: false,
+    holdOn: new Tumbler({ init: () => false, timeout: 500 }),
+  }),
   options: { timeout: 150, threshold: 0 },
+})
+patch(sentinelObserver, {
+  holdOn() {
+    this._deb.ctx.holdOn.mutate(true)
+  },
 })
 const itemObserver = new DebouncedIntersectionObserver({
   onEvent(entries, ctx) {
