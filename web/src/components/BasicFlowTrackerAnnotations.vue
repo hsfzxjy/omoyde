@@ -1,8 +1,7 @@
 <script setup>
-import { computed } from "vue"
-import { getDataSource } from "../services/fragment"
+import { computed, inject } from "vue"
 
-const dataSource = getDataSource()
+const dataSource = inject("dataSource")
 const highlightedIndices = await dataSource.getHighlightedIndices()
 const nItems = await dataSource.countAll()
 

@@ -2,6 +2,7 @@
 /* this component should be recycled after dataSource changed */
 
 import { onBeforeUnmount, onMounted, provide, reactive, ref, watch } from "vue"
+import EventEmitter from "events"
 import { getDataSource } from "../services/fragment"
 import { store } from "../states"
 import { Mutex } from "../utils/aio"
@@ -13,7 +14,10 @@ import BasicFlowItem from "./BasicFlowItem.vue"
 import BasicFlowTracker from "./BasicFlowTracker.vue"
 
 const trashbin = new TrashBin()
-const dataSource = getDataSource()
+const dataSource = await getDataSource()
+provide("dataSource", dataSource)
+const flowBus = new EventEmitter()
+provide("flowBus", flowBus)
 const currentItems = reactive([])
 const tracker = reactive({
   date: 0,
@@ -119,9 +123,9 @@ onBeforeUnmount(() => {
   itemObserver.disconnect()
 })
 
-function onUpdateIndex(index) {
-  return itemsPuller.initial({ index })
-}
+flowBus.on("update-index", (index, anchorLocalIndex) => {
+  itemsPuller.jumpTo({ targetIndex: index, initial: false, anchorLocalIndex })
+})
 
 const itemsPuller = {
   _mutex: new Mutex(),

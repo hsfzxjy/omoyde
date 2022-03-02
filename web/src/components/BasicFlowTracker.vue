@@ -1,15 +1,13 @@
 <script setup>
 import BasicFlowTrackerAnnotations from "./BasicFlowTrackerAnnotations.vue"
 import BasicFlowTrackerIndicator from "./BasicFlowTrackerIndicator.vue"
-import { computed, onMounted, reactive, ref } from "vue"
-import { getDataSource } from "../services/fragment"
+import { computed, onMounted, inject, reactive, ref } from "vue"
 import { DebouncedTouchHandler } from "../utils/dom"
 import { patch } from "../utils/misc"
 import { TrashBin } from "../utils/trashbin"
 
 const trashbin = new TrashBin()
 const props = defineProps({ currentItemGlobalIndex: Number })
-const emit = defineEmits(["updateIndex"])
 const $container = ref()
 const $main = ref()
 const state = reactive({
@@ -52,7 +50,7 @@ onMounted(() => {
     onEnd(evt) {
       evt.preventDefault()
       if (state.touchingThumbFraction !== null)
-        emit("updateIndex", touchingGlobalIndex.value)
+        flowBus.emit("update-index", touchingGlobalIndex.value)
       patch(state, {
         touchingThumbFraction: null,
         touching: false,
@@ -67,7 +65,8 @@ onMounted(() => {
   trashbin.collect(touchHandler)
 })
 
-const dataSource = getDataSource()
+const dataSource = inject("dataSource")
+const flowBus = inject("flowBus")
 const nItems = await dataSource.countAll()
 const startText = "START"
 const endText = "NOW"
