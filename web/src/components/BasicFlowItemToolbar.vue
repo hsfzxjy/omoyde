@@ -1,5 +1,6 @@
 <script setup>
 import { computed, inject, toRaw } from "vue"
+import { ITEM_NULL, ITEM_UNKNOWN } from "../services/media/local"
 import { store } from "../states"
 import { clone } from "../utils/misc"
 
@@ -12,6 +13,15 @@ const dataSource = inject("dataSource")
 const flowBus = inject("flowBus")
 const show = computed(() => store.fragment.editting)
 const edittable = computed(() => props.data.kind === "msg")
+
+const showMoveUp = computed(() => {
+  const [prev0, prev1] = props.data.prev
+  return prev0.kind !== ITEM_NULL && prev1.kind !== ITEM_UNKNOWN
+})
+const showMoveDown = computed(() => {
+  const [next0, next1] = props.data.next
+  return next0.kind !== ITEM_NULL && next1.kind !== ITEM_UNKNOWN
+})
 
 function detachedItem() {
   const item = clone(toRaw(props.data))
@@ -42,10 +52,20 @@ function onMoveDown() {
         <div class="basic-flow-item-toolbar-button">EDIT</div>
         <div class="basic-flow-item-toolbar-button">DEL</div>
         <div class="basic-flow-item-toolbar-splitter"></div>
-        <div class="basic-flow-item-toolbar-button" @click="onMoveDown">
+        <div
+          class="basic-flow-item-toolbar-button"
+          @click="onMoveDown"
+          v-if="showMoveDown"
+        >
           DOWN
         </div>
-        <div class="basic-flow-item-toolbar-button" @click="onMoveUp">UP</div>
+        <div
+          class="basic-flow-item-toolbar-button"
+          @click="onMoveUp"
+          v-if="showMoveUp"
+        >
+          UP
+        </div>
       </template>
     </div>
     <div class="basic-flow-item-toolbar bottom">
