@@ -12,15 +12,16 @@ export class ScrollHelper {
     const $scrollable = this._scrollableGetter()
     if ($scrollable) $scrollable.scrollTop = 0
   }
-  dictate() {
+  dictate(anchor1) {
     const $scrollable = this._scrollableGetter()
-    const $anchor = this._anchorGetter()
-    const oldAnchorOffsetTop = $anchor.offsetTop
     const oldScrollTop = $scrollable.scrollTop
-    return async () => {
+    const $anchor = (anchor1 || this._anchorGetter)()
+    const oldAnchorOffsetTop =
+      $anchor instanceof HTMLElement ? $anchor.offsetTop : oldScrollTop
+    return async (anchor2) => {
       await nextTick()
       const $scrollable = this._scrollableGetter()
-      const $anchor = this._anchorGetter()
+      const $anchor = (anchor2 || anchor1 || this._anchorGetter)()
       const newAnchorOffsetTop = $anchor.offsetTop
       $scrollable.scrollTop =
         oldScrollTop - oldAnchorOffsetTop + newAnchorOffsetTop
