@@ -1,4 +1,5 @@
 import { toRaw } from "vue"
+import { clone } from "../../utils/misc"
 import { ITEM_NULL } from "./local"
 
 export function timeGapIsLarge(dt, prevDt) {
@@ -6,7 +7,7 @@ export function timeGapIsLarge(dt, prevDt) {
 }
 
 export function moveForward(dataSource, index, item) {
-  item = toRaw(item)
+  item = clone(toRaw(item))
   const {
     prev: [{ dt: prev0dt }, { dt: prev1dt, kind: prev1kind }],
     dt,
@@ -29,7 +30,7 @@ export function moveForward(dataSource, index, item) {
 }
 
 export function moveBackward(dataSource, index, item) {
-  item = toRaw(item)
+  item = clone(toRaw(item))
   const {
     next: [{ dt: next0dt }, { dt: next1dt, kind: next1kind }],
     dt,

@@ -257,10 +257,11 @@ export class OverlayDS {
     console.log(this._bridge._internal())
   }
   inplaceMutate(index, item) {
-    const [_0, _1, [x]] = this._bridge.range_t2b(index, index, true)
+    const x = this._bridge.range_t2b(index, index, true)[2][0]
     if (x.handle) {
+      const { adds, ia, i } = x.handle
       item.id = Symbol()
-      patch(x.item, item)
+      adds[ia][1][i] = item
     } else {
       this.remove(index, index)
       this.insert(index - 1, [item])
