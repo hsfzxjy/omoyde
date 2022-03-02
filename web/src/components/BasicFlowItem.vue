@@ -15,6 +15,7 @@ const componentMapping = {
 const currentComponent = computed(() => componentMapping[props.data.kind])
 const classes = computed(() => {
   const classes = ["basic-flow-item"]
+  if (store.fragment.editting) classes.push("editting")
   if ($inner.value) classes.extend($inner.value.wrapperClasses)
   return classes
 })

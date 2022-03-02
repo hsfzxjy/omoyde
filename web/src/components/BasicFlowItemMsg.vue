@@ -25,6 +25,11 @@ defineExpose({
       margin-top: -0.5rem;
     }
   }
+
+  &.msg.q.editting {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
 }
 
 .basic-flow-item-msg {
