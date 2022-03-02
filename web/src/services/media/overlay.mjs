@@ -249,12 +249,10 @@ export class OverlayDS {
   moveForward(index, item) {
     this.remove(index, index)
     this.insert(index - 2, [item])
-    console.log(this._bridge._internal())
   }
   moveBackward(index, item) {
     this.remove(index, index)
     this.insert(index, [item])
-    console.log(this._bridge._internal())
   }
   inplaceMutate(index, item) {
     const x = this._bridge.range_t2b(index, index, true)[2][0]
