@@ -3,9 +3,15 @@ import { computed, inject, onBeforeUnmount, onMounted, ref } from "vue"
 import BasicFlowItemTimeMarker from "./BasicFlowItemTimeMarker.vue"
 import BasicFlowItemImage from "./BasicFlowItemImage.vue"
 import BasicFlowItemMsg from "./BasicFlowItemMsg.vue"
+import BasicFlowItemToolbar from "./BasicFlowItemToolbar.vue"
+import { store } from "../states"
 
 const itemObserver = inject("basic-flow-observer")
-const props = defineProps({ data: Object, localIndex: Number })
+const props = defineProps({
+  data: Object,
+  localIndex: Number,
+  globalIndex: Number,
+})
 const $wrapper = ref()
 const $inner = ref()
 const componentMapping = {
@@ -31,6 +37,11 @@ onBeforeUnmount(() => {
 <template>
   <div ref="$wrapper" :class="classes" :data-local-index="props.localIndex">
     <basic-flow-item-time-marker :data="data" />
+    <basic-flow-item-toolbar
+      :data="data"
+      :globalIndex="globalIndex"
+      :localIndex="localIndex"
+    />
     <component :is="currentComponent" :data="data" ref="$inner"></component>
   </div>
 </template>
@@ -41,5 +52,6 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 </style>
