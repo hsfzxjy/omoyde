@@ -188,7 +188,10 @@ const itemsPuller = {
   },
 }
 
-await itemsPuller.initial({ dt: tracker.date })
+await itemsPuller.jumpTo({
+  targetIndex: tracker.globalIndex + Math.round(tracker.offset),
+  initial: true,
+})
 </script>
 
 <template>
