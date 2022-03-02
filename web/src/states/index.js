@@ -1,4 +1,5 @@
-import { reactive } from "vue"
+import EventEmitter from "events"
+import { reactive, watch } from "vue"
 
 export const store = reactive({
   ui: {
@@ -7,3 +8,9 @@ export const store = reactive({
   },
   fragment: { currentName: "default", editting: true },
 })
+
+export const bus = new EventEmitter()
+watch(
+  () => store.fragment.editting,
+  () => bus.emit("edittingChanged")
+)
