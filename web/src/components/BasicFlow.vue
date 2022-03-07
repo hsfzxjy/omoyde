@@ -51,8 +51,6 @@ const sentinelObserver = new DebouncedIntersectionObserver({
     }
   },
   async handle(ctx) {
-    if (ctx.holdOn.value()) return
-
     if (ctx.bottom) await itemsPuller.backward()
     if (ctx.top) await itemsPuller.forward()
   },
@@ -63,11 +61,7 @@ const sentinelObserver = new DebouncedIntersectionObserver({
   }),
   options: { timeout: 150, threshold: 0 },
 })
-patch(sentinelObserver, {
-  holdOn() {
-    this._deb.ctx.holdOn.mutate(true)
-  },
-})
+
 const itemObserver = new DebouncedIntersectionObserver({
   onEvent(entries, ctx) {
     entries.forEach((entry) => {
@@ -153,7 +147,6 @@ const itemsPuller = {
         await this._localView.jumpTo({ targetIndex, loadForward: true })
         await recoverScrollTop(() => $itemElAt(tracker.localIndex))
       }
-      sentinelObserver.holdOn()
     })
   },
   forward() {
