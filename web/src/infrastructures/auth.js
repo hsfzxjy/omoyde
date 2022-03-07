@@ -1,3 +1,4 @@
+import { E_AUTH } from "../services/errors"
 import { Resource } from "../utils/resource"
 import { APIClient } from "./api_client"
 
@@ -14,7 +15,7 @@ export const accessToken = new Resource("accessToken").onExpired(async (h) => {
   if (refreshTokenExpecting) h.ready()
   const pincode = await h.expect("PINCODE")
   const r = await APIClient.post("/refresh", { password: pincode })
-  if (r.data.error) {
+  if (r.data.code === E_AUTH) {
     refreshToken.forceExpire()
     await refreshToken.val()
   }
@@ -23,7 +24,7 @@ export const accessToken = new Resource("accessToken").onExpired(async (h) => {
 
 export async function loginWithPassword(password) {
   const r = await APIClient.post("/login", { password })
-  if (r.data.error) throw new Error(r.data.detail)
+  if (r.data.code === E_AUTH) throw new Error(r.data.detail)
 
   refreshToken.send("LOGIN")
 }

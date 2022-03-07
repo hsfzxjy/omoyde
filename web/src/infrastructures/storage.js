@@ -3,13 +3,14 @@ import { Resource } from "../utils/resource"
 import { accessToken } from "./auth"
 import COS from "cos-js-sdk-v5"
 import { retryOnNetworkFailure } from "../utils/network"
+import { E_AUTH } from "../services/errors"
 
 export const storageCredential = new Resource("storageCredential")
   .onInit(async (h) => {
     await accessToken.readyVal()
     const accessTokenSnapshot = accessToken.version()
     const r = await APIClient.get("/storage/credential")
-    if (r.data.error) {
+    if (r.data.code === E_AUTH) {
       accessToken.expire(accessTokenSnapshot)
       h.expire("accessToken expired")
     }
