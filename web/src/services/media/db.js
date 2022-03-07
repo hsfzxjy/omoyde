@@ -74,6 +74,9 @@ export const mediaDB = new Resource("mediaDB")
   })
   .onExpired((h) => h.reset())
   .extend({
+    async getHashByKind(kind) {
+      const item = await this._dexie.log.where("kind").equals(kind).first()
+      return item.hash
     },
     before: dispatch({ index: "beforeIndex", dt: "beforeDt" }, () => mediaDB),
     beforeIndex({ index, limit = 10, includes = false }) {
