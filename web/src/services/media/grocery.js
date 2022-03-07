@@ -87,7 +87,9 @@ export const MSG_MEDIA = {
               arr[ptr + 3]) *
             1000
           ptr += 4
-          const dt = dtBase + (arr[ptr] - 256)
+          let dtOffset = arr[ptr]
+          if (dtOffset >= 128) dtOffset -= 256
+          const dt = dtBase + dtOffset
           ptr += 1
           const textLen = (arr[ptr] << 8) | arr[ptr + 1]
           ptr += 2
