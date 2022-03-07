@@ -72,8 +72,9 @@ export const mediaDB = new Resource("mediaDB")
     await internal.init()
     h.ready(internal)
   })
+  .onExpired((h) => h.reset())
   .extend({
-    invalidate: Proxy,
+    },
     before: dispatch({ index: "beforeIndex", dt: "beforeDt" }, () => mediaDB),
     beforeIndex({ index, limit = 10, includes = false }) {
       let end = index
