@@ -22,7 +22,7 @@ def setup_api_config_json_file():
     api_config_file.write_text(json.dumps(config_content, indent=2))
 
 
-def setup_web_vue_env_file():
+def setup_dotenv_file():
     config_content = json.loads(config_file.read_text())
 
     # don't transcribe entries under "local"
@@ -30,7 +30,7 @@ def setup_web_vue_env_file():
 
     entries = {}
 
-    def _transcribe(cfg: dict, prefix=("VITE",)):
+    def _transcribe(cfg: dict, prefix=()):
         for k, v in cfg.items():
             k = k.upper()
             if isinstance(v, dict):
@@ -45,17 +45,21 @@ def setup_web_vue_env_file():
                 fd.write(f"{k}={v}\n")
 
     cfg = deepcopy(config_content)
+    _transcribe(cfg, prefix=("OMOYDE",))
+    _to_file(root_dir / "lib" / "msg_internal" / ".env")
+
+    cfg = deepcopy(config_content)
     cfg["security"]["password"] = ""
     cfg["security"]["pincode"] = ""
-    _transcribe(cfg)
+    _transcribe(cfg, prefix=("VITE",))
     _to_file(root_dir / "web" / ".env")
 
     cfg = deepcopy(config_content)
     cfg["web"]["authURL"] = "http://localhost:8080"
-    _transcribe(cfg)
+    _transcribe(cfg, prefix=("VITE",))
     _to_file(root_dir / "web" / ".env.development.local")
 
 
 if __name__ == "__main__":
     setup_api_config_json_file()
-    setup_web_vue_env_file()
+    setup_dotenv_file()
