@@ -38,7 +38,6 @@ cos_config = CosConfig(
     Region=cfg.tcloud.cos.region,
     SecretId=cfg.tcloud.secretId,
     SecretKey=cfg.tcloud.secretKey,
-    Domain=cfg.system.domain,
     Scheme="https",
 )
 cos_client = CosS3Client(cos_config)
