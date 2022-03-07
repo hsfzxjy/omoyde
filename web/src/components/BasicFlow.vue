@@ -12,6 +12,7 @@ import { TrashBin } from "../utils/trashbin"
 import { LSRefValue } from "../utils/value"
 import BasicFlowItem from "./BasicFlowItem.vue"
 import BasicFlowTracker from "./BasicFlowTracker.vue"
+import BasicFlowCommands from "./BasicFlowCommands.vue"
 import { MediaLocalView } from "../services/media/local"
 
 const trashbin = new TrashBin()
@@ -183,6 +184,7 @@ await itemsPuller.jumpTo({
 
 <template>
   <div class="basic-flow-wrapper">
+    <basic-flow-commands />
     <div ref="$flowContainer" class="basic-flow-container">
       <div
         ref="$topSentinel"
