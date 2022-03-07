@@ -1,10 +1,14 @@
-from typing import Literal
 import json
 from sts.sts import Sts
+from qcloud_cos import CosServiceError
 
 from app.prelude import *
+from app.core._msg_pybind import FFIVec, mod_msg_items, display_msg_items
 
 REDIS_KEY_COS_CREDENTIAL = ":sts:crendential"
+OBJECT_HEADERS = {
+    "CacheControl": "private,max-age=0,must-revalidate",
+}
 
 
 async def get_cos_credential():
@@ -36,3 +40,38 @@ async def get_cos_credential():
 async def storage_get_credential(Authorize: AuthJWT = Depends()):
     Authorize.jwt_required()
     return await get_cos_credential()
+
+
+async def mod_media(mods, expected_hash):
+    try:
+        r = cos_client.get_object(
+            cfg.tcloud.cos.bucket, "/assets/msg.bin", IfMatch=expected_hash
+        )
+    except CosServiceError as e:
+        if e.get_error_code() == "PreconditionFailed":
+            raise ClientFileTooOld()
+        raise e
+    old_items = bytearray(b"").join(r["Body"])
+    new_items = mod_msg_items(
+        FFIVec.from_bytes(old_items),
+        FFIVec.from_bytes(mods),
+    ).contents
+    with new_items.guard():
+        display_msg_items(FFIVec.from_bytes(old_items))
+        display_msg_items(new_items)
+        new_items = new_items.to_bytes()
+
+    r = cos_client.put_object(
+        cfg.tcloud.cos.bucket, new_items, "/assets/msg.bin", **OBJECT_HEADERS
+    )
+
+
+@app.post("/storage/mod_media")
+async def storage_mod_media(
+    Authorize: AuthJWT = Depends(),
+    mods=Body(...),
+    expected_hash=Header(None),
+):
+    Authorize.jwt_required()
+    await mod_media(mods, expected_hash)
+    return "ok"
