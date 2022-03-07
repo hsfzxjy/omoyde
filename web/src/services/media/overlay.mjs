@@ -237,6 +237,13 @@ export class OverlayDS {
     })
     return range.map((x) => (typeof x === "number" ? items[x] : x))
   }
+  collect() {
+    const { adds, dels } = this._bridge._internal()
+    const flatAdds = []
+    for (const [_, add] of adds) flatAdds.extend(add)
+    const flatDels = dels.slice(1).map(([_, del]) => del)
+    return [flatAdds, flatDels]
+  }
   remove(tstart, tend, extras = []) {
     return this._bridge.remove(tstart, tend, extras)
   }
