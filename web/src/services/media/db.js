@@ -21,17 +21,17 @@ class MediaDBInternal {
   _transaction(cb, mode = "rw") {
     return this._dexie.transaction(mode, this._dexie.log, this._dexie.data, cb)
   }
-  async _isLocalExpired(kind, remoteTS) {
+  async _isLocalExpired(kind, remoteHash) {
     const record = await this._dexie.log.get(kind)
-    const localTS = record ? record.time : new Date(0)
-    return localTS < remoteTS
+    const localHash = record && record.hash
+    return localHash !== remoteHash
   }
   async _updateMediaContent(media, file) {
-    const { lastModified: remoteTS, content } = file
+    const { hash: remoteHash, content } = file
     const kind = media.kind
-    if (!(await this._isLocalExpired(kind, remoteTS))) return
+    if (!(await this._isLocalExpired(kind, remoteHash))) return
 
-    this._dexie.log.put({ kind, time: remoteTS })
+    this._dexie.log.put({ kind, hash: remoteHash })
 
     await this._dexie.data.where("kind").equals(kind).delete()
     while (!content.done()) {
@@ -54,8 +54,8 @@ class MediaDBInternal {
   }
   async init() {
     const toPull = await allMedias.aFilter(async (media) => {
-      const remoteTS = await media.getFileLastModified()
-      return this._isLocalExpired(media.kind, remoteTS)
+      const remoteHash = await media.getFileHash()
+      return this._isLocalExpired(media.kind, remoteHash)
     })
     await this.pull(toPull)
   }
@@ -66,7 +66,7 @@ export const mediaDB = new Resource("mediaDB")
     const dexie = new Dexie("media")
     dexie
       .version(DB_VERSION)
-      .stores({ data: "++id, dt, kind, type", log: "kind, time" })
+      .stores({ data: "++id, dt, kind, type", log: "kind, hash" })
     dexie.open()
     const internal = new MediaDBInternal(dexie)
     await internal.init()

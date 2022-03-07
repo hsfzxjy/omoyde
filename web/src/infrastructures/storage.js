@@ -68,17 +68,17 @@ export const storageClient = new Resource("storageClient")
       return {
         body: Body,
         headers,
-        lastModified,
+        ETag,
       }
     },
     async getFileMetadata({ filePath }) {
       const { headers } = await storageClient.service("headObject", {
         Key: filePath,
       })
-      return { headers, lastModified }
+      return { headers, ETag }
     },
   })
 
-function lastModified() {
-  return new Date(this.headers["last-modified"])
+function ETag() {
+  return this.headers["etag"].slice(1, -1)
 }

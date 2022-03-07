@@ -9,14 +9,14 @@ const shared = {
     })
     return {
       content: this._decode(r.body),
-      lastModified: r.lastModified(),
+      hash: r.ETag(),
     }
   },
-  async getFileLastModified() {
+  async getFileHash() {
     const r = await storageClient.getFileMetadata({
       filePath: this.filePath,
     })
-    return r.lastModified()
+    return r.ETag()
   },
 }
 
