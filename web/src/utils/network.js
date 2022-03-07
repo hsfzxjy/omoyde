@@ -16,8 +16,9 @@ export function retryOnNetworkFailure(performRequest, retryInterval = 5000) {
       return Promise.reject(err)
     }
 
+    const interval = Math.min(retryInterval * 2, 120000)
     return sleep(retryInterval).then(() =>
-      retryOnNetworkFailure(performRequest, retryInterval)
+      retryOnNetworkFailure(performRequest, interval)
     )
   })
 }
