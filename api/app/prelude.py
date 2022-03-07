@@ -2,7 +2,7 @@ from typing import Union
 import aioredis
 from pydantic import BaseModel
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status, FastAPI, Request
+from fastapi import Depends, HTTPException, status, FastAPI, Request, Body, Header
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_jwt_auth import AuthJWT
@@ -22,6 +22,8 @@ __all__ = [
     "pwd_context",
     "BaseModel",
     "Depends",
+    "Body",
+    "Header",
     "HTTPException",
     "status",
     "cos_client",
