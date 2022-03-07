@@ -1,0 +1,12 @@
+[package]
+edition = "2021"
+name = "msg_pybind"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+msg_internal = {path = "../../lib/msg_internal"}
