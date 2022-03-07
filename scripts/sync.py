@@ -154,7 +154,7 @@ class ListItem:
         elif respect == "remote":
             runcmd("coscmd", "download", "-f", self.remote_path, self.local_path)
 
-        headers = {"Cache-Control": "private,max-age=15,must-revalidate"}
+        headers = {"Cache-Control": "private,max-age=0,must-revalidate"}
         runcmd(
             "coscmd",
             "upload",
