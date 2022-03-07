@@ -12,7 +12,7 @@
 //
 // For simplicity, an overlay DS supports two kinds of modifications
 // -- additions and deletions. They are maintained in two arrays
-// `adds: [[int, [Item]]]` and `dels: [int]`. The modifications are applied
+// `adds: [[int, [Item]]]` and `dels: [int, any]`. The modifications are applied
 // regarding the rules as follows:
 //
 // 1. Create exactly one "slot" after each item in the sequence of <bottom DS>.
@@ -21,8 +21,9 @@
 // 2. For each addition entry `add`, `add[0]` is a number and `add[1]` is an
 //    array of items. All items of `add[1]` will be inserted without changing
 //    their order at the place of <slot `add[0]`>.
-// 3. For each deletion entry `del`, `del` is a number. The i-th item of the
-//    **original** sequence be deleted.
+// 3. For each deletion entry `del`, `del[0]` is a number. The i-th item of the
+//    **original** sequence be deleted. `del[1]` is extra information of the
+//    deleted item, which is bound to be passed over to the server.
 //
 // As of concrete examples, check test_overlay.mjs.
 
@@ -38,15 +39,15 @@ export function Bridge(bottom_size, adds, dels) {
       return { adds, dels, size }
     },
     // remove range [tstart, tend]
-    remove(tstart, tend) {
+    remove(tstart, tend, extras = []) {
       const [bstart, _, range] = this.range_t2b(tstart, tend, true)
       let id = dels.length - 1
       for (let i = range.length - 1; i >= 0; i--) {
         let x = range[i]
         if (typeof x === "number") {
           x += bstart
-          while (dels[id] > x) id--
-          dels.splice(id + 1, 0, x)
+          while (dels[id][0] > x) id--
+          dels.splice(id + 1, 0, [x, extras[i]])
         } else {
           const {
             handle: { ia, i },
@@ -121,7 +122,7 @@ export function Bridge(bottom_size, adds, dels) {
         }
 
         let ndel = 0
-        const deli = dels[id]
+        const deli = (dels[id] || [])[0]
         const [addi, addx] = adds[ia] || []
         const addxl = addx && addx.length
         if (ia == la || (id < ld && deli <= addi)) {
@@ -223,7 +224,7 @@ export class OverlayDS {
     this._bottom = bottom
     this._bottomSize = bottomSize
     this._adds = [[bottomSize - 1, []]]
-    this._dels = [-1]
+    this._dels = [[-1, null]]
     this._bridge = Bridge(bottomSize, this._adds, this._dels)
   }
   async _query(tstart, tend) {
@@ -236,8 +237,8 @@ export class OverlayDS {
     })
     return range.map((x) => (typeof x === "number" ? items[x] : x))
   }
-  remove(tstart, tend) {
-    return this._bridge.remove(tstart, tend)
+  remove(tstart, tend, extras = []) {
+    return this._bridge.remove(tstart, tend, extras)
   }
   insert(tstart, items) {
     items.forEach((item) => {
@@ -246,22 +247,22 @@ export class OverlayDS {
     return this._bridge.insert(tstart, items)
   }
   // caller should also provide item, so that we don't have to query bottom DS
-  moveForward(index, item) {
-    this.remove(index, index)
+  moveForward(index, item, extras = []) {
+    this.remove(index, index, extras)
     this.insert(index - 2, [item])
   }
-  moveBackward(index, item) {
-    this.remove(index, index)
+  moveBackward(index, item, extras = []) {
+    this.remove(index, index, extras)
     this.insert(index, [item])
   }
-  inplaceMutate(index, item) {
+  inplaceMutate(index, item, extras = []) {
     const x = this._bridge.range_t2b(index, index, true)[2][0]
     if (x.handle) {
       const { adds, ia, i } = x.handle
       item.id = Symbol()
       adds[ia][1][i] = item
     } else {
-      this.remove(index, index)
+      this.remove(index, index, extras)
       this.insert(index - 1, [item])
     }
   }

@@ -27,7 +27,7 @@ export function moveForward(dataSource, index, item) {
   delete item.next
   if (timeGapIsLarge(dt, prev0dt)) {
     item.dt = prev0dt + 1
-    dataSource.inplaceMutate(index, item)
+    dataSource.inplaceMutate(index, item, [dt])
     return index
   } else {
     const newDt =
@@ -36,7 +36,7 @@ export function moveForward(dataSource, index, item) {
         : between(prev0dt, prev1dt)
 
     item.dt = newDt
-    dataSource.moveForward(index, item)
+    dataSource.moveForward(index, item, [dt])
     return index - 1
   }
 }
@@ -51,7 +51,7 @@ export function moveBackward(dataSource, index, item) {
   delete item.next
   if (timeGapIsLarge(next0dt, dt)) {
     item.dt = next0dt - 1
-    dataSource.inplaceMutate(index, item)
+    dataSource.inplaceMutate(index, item, [dt])
     return index
   } else {
     const newDt =
@@ -60,7 +60,7 @@ export function moveBackward(dataSource, index, item) {
         : between(next0dt, next1dt)
 
     item.dt = newDt
-    dataSource.moveBackward(index, item)
+    dataSource.moveBackward(index, item, [dt])
     return index + 1
   }
 }
