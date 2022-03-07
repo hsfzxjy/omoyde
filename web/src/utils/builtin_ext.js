@@ -27,6 +27,7 @@ function extendArray() {
     let index = 0
     for (const second of arr) {
       result.push([this[index], second])
+      index++
     }
     return result
   }
