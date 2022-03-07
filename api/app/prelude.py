@@ -10,6 +10,8 @@ from fastapi_jwt_auth.exceptions import AuthJWTException
 from qcloud_cos import CosConfig, CosS3Client
 
 from app.models.config import cfg
+from app import errors
+from app.errors import *
 
 
 __all__ = [
@@ -23,7 +25,8 @@ __all__ = [
     "HTTPException",
     "status",
     "cos_client",
-]
+] + errors.__all__
+del errors
 
 app = FastAPI(title="FastAPI Redis Tutorial")
 redis = aioredis.from_url(cfg.redis_url, decode_responses=True)
@@ -50,14 +53,12 @@ app.add_middleware(
 
 @app.exception_handler(AuthJWTException)
 @app.exception_handler(HTTPException)
+@app.exception_handler(OmoydeException)
+@app.exception_handler(CosClientError)
 def authjwt_exception_handler(
     _request: Request, exc: Union[AuthJWTException, HTTPException]
 ):
-    if isinstance(exc, AuthJWTException):
-        message = exc.message
-    else:
-        message = exc.detail
     return JSONResponse(
-        status_code=exc.status_code,
-        content={"error": exc.__class__.__name__, "detail": message},
+        status_code=getattr(exc, "status_code", 400),
+        content=get_error_response(exc),
     )
