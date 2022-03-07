@@ -307,3 +307,4 @@ config.json
 !/assets/.gitkeep
 /tools/migrate*
 /scripts/static/picker/*.min.css
+/.tmp/
