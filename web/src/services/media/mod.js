@@ -3,7 +3,6 @@ import { accessToken } from "../../infrastructures/auth"
 import { Mutex } from "../../utils/aio"
 import { E_AUTH, E_CLIENT_FILE_TOO_OLD } from "../errors"
 import { mediaDB } from "./db"
-import { MSG_MEDIA } from "./grocery"
 
 function writeInt(buf, ptr, x, nbytes) {
   for (let i = 0; i < nbytes; i++) {
@@ -64,7 +63,7 @@ export const mediaModifier = {
     return buf
   },
   async _request(encoded) {
-    const hash = await mediaDB.getHashByKind("msg")
+    const hash = await mediaDB.getHashByKind("widget")
     const request = () =>
       APIClient.post("/storage/mod_media", encoded, {
         headers: { "expected-hash": hash },
@@ -79,8 +78,6 @@ export const mediaModifier = {
       // TODO
       throw new Error()
     }
-    mediaDB.forceExpire()
-    await mediaDB.val()
   },
   async commit(overlay) {
     const encoded = this._collect(overlay)

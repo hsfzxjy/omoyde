@@ -24,7 +24,7 @@
   "system": {
     "docker_name": "omoyde-api",
     "domain": "",
-    "msg_encoding": {
+    "widget_encoding": {
       "python": "utf-16_be",
       "javascript": "utf-16be"
     }

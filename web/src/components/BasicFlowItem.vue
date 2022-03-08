@@ -2,7 +2,7 @@
 import { computed, inject, onBeforeUnmount, onMounted, ref } from "vue"
 import BasicFlowItemTimeMarker from "./BasicFlowItemTimeMarker.vue"
 import BasicFlowItemImage from "./BasicFlowItemImage.vue"
-import BasicFlowItemMsg from "./BasicFlowItemMsg.vue"
+import BasicFlowItemWidget from "./BasicFlowItemWidget.vue"
 import BasicFlowItemToolbar from "./BasicFlowItemToolbar.vue"
 import { store } from "../states"
 
@@ -16,7 +16,7 @@ const $wrapper = ref()
 const $inner = ref()
 const componentMapping = {
   image: BasicFlowItemImage,
-  msg: BasicFlowItemMsg,
+  widget: BasicFlowItemWidget,
 }
 const currentComponent = computed(() => componentMapping[props.data.kind])
 const classes = computed(() => {

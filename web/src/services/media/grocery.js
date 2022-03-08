@@ -23,7 +23,7 @@ const shared = {
 export const IMAGE_MEDIA = {
   ...shared,
   kind: "image",
-  filePath: "/assets/metas.bin",
+  filePath: "/assets/images.bin",
   _decode(content, chunkSize = 1000) {
     let ptr = 0
     let done = false
@@ -59,16 +59,16 @@ export const IMAGE_MEDIA = {
   },
 }
 
-export const MSG_MEDIA = {
+export const WIDGET_MEDIA = {
   ...shared,
-  kind: "msg",
-  filePath: "/assets/msg.bin",
+  kind: "widget",
+  filePath: "/assets/widgets.bin",
   _decode(content, chunkSize = 1000) {
     let ptr = 0
     let done = false
     const arr = new Uint8Array(content)
     const textDecoder = new TextDecoder(
-      import.meta.env.VITE_SYSTEM_MSG_ENCODING_JAVASCRIPT
+      import.meta.env.VITE_SYSTEM_WIDGET_ENCODING_JAVASCRIPT
     )
     return {
       done() {
@@ -95,7 +95,7 @@ export const MSG_MEDIA = {
           ptr += 2
           const text = textDecoder.decode(arr.subarray(ptr, ptr + textLen))
           ptr += textLen
-          chunk.push({ type, dt, text, kind: "msg" })
+          chunk.push({ type, dt, text, kind: "widget" })
           counter += 1
         }
         if (ptr === arr.byteLength) done = true
@@ -105,4 +105,4 @@ export const MSG_MEDIA = {
   },
 }
 
-export const allMedias = [IMAGE_MEDIA, MSG_MEDIA]
+export const allMedias = [IMAGE_MEDIA, WIDGET_MEDIA]

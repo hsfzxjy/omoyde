@@ -1,10 +1,11 @@
 [package]
 edition = "2021"
-name = "msg-decode"
+name = "widget_core"
 version = "0.1.0"
+
+[lib]
+crate-type = ["rlib"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.52"
-msg_internal = {path = "../../lib/msg_internal"}

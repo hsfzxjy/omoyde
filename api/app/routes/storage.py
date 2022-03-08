@@ -3,7 +3,7 @@ from sts.sts import Sts
 from qcloud_cos import CosServiceError
 
 from app.prelude import *
-from app.core._msg_pybind import FFIVec, mod_msg_items, display_msg_items
+from app.core._widget import FFIVec, mod_widgets, display_widgets
 
 REDIS_KEY_COS_CREDENTIAL = ":sts:crendential"
 OBJECT_HEADERS = {
@@ -45,24 +45,24 @@ async def storage_get_credential(Authorize: AuthJWT = Depends()):
 async def mod_media(mods, expected_hash):
     try:
         r = cos_client.get_object(
-            cfg.tcloud.cos.bucket, "/assets/msg.bin", IfMatch=expected_hash
+            cfg.tcloud.cos.bucket, "/assets/widgets.bin", IfMatch=expected_hash
         )
     except CosServiceError as e:
         if e.get_error_code() == "PreconditionFailed":
             raise ClientFileTooOld()
         raise e
     old_items = bytearray(b"").join(r["Body"])
-    new_items = mod_msg_items(
+    new_items = mod_widgets(
         FFIVec.from_bytes(old_items),
         FFIVec.from_bytes(mods),
     ).contents
     with new_items.guard():
-        display_msg_items(FFIVec.from_bytes(old_items))
-        display_msg_items(new_items)
+        display_widgets(FFIVec.from_bytes(old_items))
+        display_widgets(new_items)
         new_items = new_items.to_bytes()
 
     r = cos_client.put_object(
-        cfg.tcloud.cos.bucket, new_items, "/assets/msg.bin", **OBJECT_HEADERS
+        cfg.tcloud.cos.bucket, new_items, "/assets/widgets.bin", **OBJECT_HEADERS
     )
 
 

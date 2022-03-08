@@ -1,3 +1,3 @@
 [workspace]
 
-members = ["tools/butler", "lib/msg_internal", "tools/msg-decode", "api/msg_pybind"]
+members = ["tools/butler", "lib/widget-core", "tools/widget-decode", "api/widget-pybind"]

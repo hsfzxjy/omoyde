@@ -1,4 +1,4 @@
-use msg_internal;
+use widget_core;
 
 #[repr(C)]
 #[derive(Debug)]
@@ -36,7 +36,7 @@ macro_rules! catch_or {
     ($x:expr,$def:expr) => {{
         match $x {
             Ok(t) => t,
-            Err(msg_internal::Error(msg)) => {
+            Err(widget_core::Error(msg)) => {
                 eprintln!("{}", msg);
                 return $def;
             }
@@ -45,18 +45,18 @@ macro_rules! catch_or {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn mod_msg_items(items: *mut FFIVec, mods: *mut FFIVec) -> *const FFIVec {
+pub unsafe extern "C" fn mod_widgets(items: *mut FFIVec, mods: *mut FFIVec) -> *const FFIVec {
     let items = FFIVec::raw_to_slice(items);
     let mods = FFIVec::raw_to_slice(mods);
-    let new_items = catch_or!(msg_internal::mod_items(items, mods), 0 as *const FFIVec);
-    // msg_internal::display_items(&new_items);
-    let new_items = msg_internal::serialize_items(new_items);
+    let new_items = catch_or!(widget_core::mod_items(items, mods), 0 as *const FFIVec);
+    // widget_core::display_items(&new_items);
+    let new_items = widget_core::serialize_items(new_items);
     Box::into_raw(FFIVec::from_vec(new_items))
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn display_msg_items(items: *mut FFIVec) {
+pub unsafe extern "C" fn display_widgets(items: *mut FFIVec) {
     let items = FFIVec::raw_to_slice(items);
-    let items = catch_or!(msg_internal::parse_items(items), ());
-    msg_internal::display_items(&items);
+    let items = catch_or!(widget_core::parse_items(items), ());
+    widget_core::display_items(&items);
 }

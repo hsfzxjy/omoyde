@@ -2,10 +2,10 @@
 import { computed } from "vue"
 
 const props = defineProps({ data: Object })
-const classes = computed(() => ["basic-flow-item-msg", props.data.type])
+const classes = computed(() => ["basic-flow-item-widget", props.data.type])
 
 defineExpose({
-  wrapperClasses: computed(() => ["msg", props.data.type]),
+  wrapperClasses: computed(() => ["widget", props.data.type]),
 })
 </script>
 
@@ -17,22 +17,22 @@ defineExpose({
 @import "../fonts/custom-font.scss";
 
 .basic-flow-item {
-  &.msg.q {
+  &.widget.q {
     padding: 0.8rem 10%;
 
-    + .msg.q {
+    + .widget.q {
       padding-top: 0;
       margin-top: -0.5rem;
     }
   }
 
-  &.msg.q.editting {
+  &.widget.q.editting {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
   }
 }
 
-.basic-flow-item-msg {
+.basic-flow-item-widget {
   @extend .custom-font;
 
   display: inline-block;

@@ -182,8 +182,8 @@ class ListItem:
 
 
 ITEMS_TO_SYNC = [
-    ListItem("metas.bin", b"", False, "local"),
-    ListItem("msg.bin", b"", False, "remote"),
+    ListItem("images.bin", b"", False, "local"),
+    ListItem("widgets.bin", b"", False, "remote"),
 ]
 
 

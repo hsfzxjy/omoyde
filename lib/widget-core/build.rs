@@ -13,7 +13,7 @@ fn main() -> Result<(), std::io::Error> {
         let line = res?;
         println!("cargo:rustc-env={}", line);
 
-        if line.starts_with("OMOYDE_SYSTEM_MSG_ENCODING_RUST=") {
+        if line.starts_with("OMOYDE_SYSTEM_WIDGET_ENCODING_RUST=") {
             let (_, encoding) = line.split_once('=').unwrap();
             match encoding {
                 "utf8" => (),

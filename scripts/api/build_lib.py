@@ -30,9 +30,9 @@ parser.add_argument(
 )
 opts = parser.parse_args()
 
-run("cargo", "build", "--package", "msg_pybind", f"--{opts.mode}")
+run("cargo", "build", "--package", "widget_pybind", f"--{opts.mode}")
 shutil.copy2(
-    root_dir / "target" / opts.mode / "libmsg_pybind.so",
+    root_dir / "target" / opts.mode / "libwidget_pybind.so",
     root_dir / "api" / "app" / "core",
 )
-os.system("cargo build --package msg_pybind --release")
+os.system("cargo build --package widget_pybind --release")

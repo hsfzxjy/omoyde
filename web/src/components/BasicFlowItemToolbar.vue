@@ -16,7 +16,7 @@ const props = defineProps({
 const dataSource = inject("dataSource")
 const flowBus = inject("flowBus")
 const show = computed(() => store.fragment.editting)
-const edittable = computed(() => props.data.kind === "msg")
+const edittable = computed(() => props.data.kind === "widget")
 
 const showMoveUp = computed(() => {
   const [prev0, prev1] = props.data.prev

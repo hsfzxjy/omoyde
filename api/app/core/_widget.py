@@ -4,8 +4,8 @@ from contextlib import contextmanager
 
 __all__ = [
     "FFIVec",
-    "mod_msg_items",
-    "display_msg_items",
+    "mod_widgets",
+    "display_widgets",
     "free_ffi_vec",
 ]
 
@@ -39,14 +39,14 @@ class FFIVec(ctypes.Structure):
 
 PFFIVec = ctypes.POINTER(FFIVec)
 
-msg_pybind = ctypes.cdll.LoadLibrary(str(Path(__file__).parent / "libmsg_pybind.so"))
+widget_pybind = ctypes.cdll.LoadLibrary(str(Path(__file__).parent / "libwidget_pybind.so"))
 
-mod_msg_items = msg_pybind.mod_msg_items
-mod_msg_items.argtypes = (PFFIVec, PFFIVec)
-mod_msg_items.restype = PFFIVec
+mod_widgets = widget_pybind.mod_widgets
+mod_widgets.argtypes = (PFFIVec, PFFIVec)
+mod_widgets.restype = PFFIVec
 
-free_ffi_vec = msg_pybind.free_ffi_vec
+free_ffi_vec = widget_pybind.free_ffi_vec
 free_ffi_vec.argtypes = (PFFIVec,)
 
-display_msg_items = msg_pybind.display_msg_items
-display_msg_items.argtypes = (PFFIVec,)
+display_widgets = widget_pybind.display_widgets
+display_widgets.argtypes = (PFFIVec,)

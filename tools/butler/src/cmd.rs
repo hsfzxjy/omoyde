@@ -116,7 +116,7 @@ pub fn handle_cli() -> Result<()> {
                 .into_par_iter()
                 .map(|gen| gen.generate())
                 .collect::<Result<Vec<_>>>()?;
-            generator::write_bins(metas, dest.join("metas.bin"))?;
+            generator::write_bins(metas, dest.join("images.bin"))?;
         }
         Commands::Fix { query, pref2 } => {
             let mut pt = db::PHOTO_TABLE.lock().unwrap();

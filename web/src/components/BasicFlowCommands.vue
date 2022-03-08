@@ -1,16 +1,27 @@
 <script setup>
 import { inject } from "vue"
+import { mediaDB } from "../services/media/db"
 import { mediaModifier } from "../services/media/mod"
+import { store } from "../states"
 
 const dataSource = inject("dataSource")
-function onSave() {
-  mediaModifier.commit(dataSource)
+async function onSave() {
+  await mediaModifier.commit(dataSource)
+  mediaDB.forceExpire()
+  await mediaDB.val()
+  store.fragment.editting = false
 }
 </script>
 
 <template>
   <div class="basic-flow-cmd">
-    <div class="basic-flow-cmd-button" @click="onSave">SAVE</div>
+    <div
+      class="basic-flow-cmd-button"
+      @click="onSave"
+      v-if="store.fragment.editting"
+    >
+      SAVE
+    </div>
   </div>
 </template>
 

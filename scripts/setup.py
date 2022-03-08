@@ -46,7 +46,7 @@ def setup_dotenv_file():
 
     cfg = deepcopy(config_content)
     _transcribe(cfg, prefix=("OMOYDE",))
-    _to_file(root_dir / "lib" / "msg_internal" / ".env")
+    _to_file(root_dir / "lib" / "widget-core" / ".env")
 
     cfg = deepcopy(config_content)
     cfg["security"]["password"] = ""
