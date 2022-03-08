@@ -42,7 +42,7 @@ async def storage_get_credential(Authorize: AuthJWT = Depends()):
     return await get_cos_credential()
 
 
-async def mod_media(mods, expected_hash):
+async def mod_widgets(mods, expected_hash):
     try:
         r = cos_client.get_object(
             cfg.tcloud.cos.bucket, "/assets/widgets.bin", IfMatch=expected_hash
@@ -66,12 +66,12 @@ async def mod_media(mods, expected_hash):
     )
 
 
-@app.post("/storage/mod_media")
-async def storage_mod_media(
+@app.post("/storage/mod_widgets")
+async def storage_mod_widgets(
     Authorize: AuthJWT = Depends(),
     mods=Body(...),
     expected_hash=Header(None),
 ):
     Authorize.jwt_required()
-    await mod_media(mods, expected_hash)
+    await mod_widgets(mods, expected_hash)
     return "ok"

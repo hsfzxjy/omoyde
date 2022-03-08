@@ -65,7 +65,7 @@ export const mediaModifier = {
   async _request(encoded) {
     const hash = await mediaDB.getHashByKind("widget")
     const request = () =>
-      APIClient.post("/storage/mod_media", encoded, {
+      APIClient.post("/storage/mod_widgets", encoded, {
         headers: { "expected-hash": hash },
       })
     let r = await request()
