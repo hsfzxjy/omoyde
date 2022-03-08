@@ -147,7 +147,7 @@ const HEADER_SIZE: usize = 8;
 struct Header {
     ty: char,
     dt: Datetime,
-    text_len: u16,
+    body_len: u16,
 }
 
 impl Header {
@@ -155,8 +155,15 @@ impl Header {
         let a = storage;
         let (ty, a) = read_be!(u8char, a);
         let (dt, a) = Datetime::from_storage(a)?;
-        let (text_len, a) = read_be!(u16, a);
-        Ok((Self { ty, dt, text_len }, a))
+        let (body_len, a) = read_be!(u16, a);
+        Ok((Self { ty, dt, body_len }, a))
+    }
+    #[inline]
+    fn body_is_text(&self) -> bool {
+        match self.ty {
+            'q' | 'm' => true,
+            _ => false,
+        }
     }
 }
 
@@ -180,7 +187,7 @@ impl<'a> Widget<'a> {
     #[inline]
     fn from_storage(storage: &'a [u8]) -> Result<(Widget<'a>, &'a [u8])> {
         let (header, _) = Header::from_storage(storage)?;
-        let record_len = HEADER_SIZE + header.text_len as usize;
+        let record_len = HEADER_SIZE + header.body_len as usize;
         let (storage, rest) = checked_split!(storage, record_len)?;
         Ok((
             Self {
@@ -190,7 +197,7 @@ impl<'a> Widget<'a> {
             rest,
         ))
     }
-    fn get_text_ptr(&self) -> &[u8] {
+    fn get_body_ptr(&self) -> &[u8] {
         &self.inner.as_ref()[HEADER_SIZE..]
     }
 }
@@ -202,7 +209,11 @@ impl<'a> Widget<'a> {
         Self::from_storage(storage)
     }
     fn get_text(&self) -> String {
-        String::from_utf8_lossy(self.get_text_ptr()).into_owned()
+        if self.header.body_is_text() {
+            String::from_utf8_lossy(self.get_body_ptr()).into_owned()
+        } else {
+            "<binary data>".into()
+        }
     }
 }
 
@@ -224,47 +235,43 @@ fn write_utf16be_words(words: Vec<u16>, buf: &mut Vec<u8>) {
 impl<'a> Widget<'a> {
     #[inline]
     pub fn from_utf8_storage(storage: &'a [u8]) -> Result<(Widget<'a>, &'a [u8])> {
-        let (mut header, rest) = Header::from_storage(storage)?;
+        let (mut this, rest) = Self::from_storage(storage)?;
 
-        let text_len = header.text_len as usize;
-        let (text_buf, rest) = checked_split!(rest, text_len)?;
+        if this.header.body_is_text() {
+            let utf16_words = utf8_buffer_to_utf16be_words(this.get_body_ptr());
+            let new_body_len = utf16_words.len() * 2;
+            this.header.body_len = new_body_len as u16;
+            this.inner = {
+                let mut s = Vec::<u8>::with_capacity(HEADER_SIZE + new_body_len);
+                s.extend_from_slice(&storage[..HEADER_SIZE]);
+                s[HEADER_SIZE - 2..HEADER_SIZE]
+                    .copy_from_slice(&this.header.body_len.to_be_bytes());
+                write_utf16be_words(utf16_words, &mut s);
+                Cow::Owned(s)
+            };
+        }
 
-        let utf16_words = utf8_buffer_to_utf16be_words(text_buf);
-        let new_text_len = utf16_words.len() * 2;
-
-        header.text_len = new_text_len as u16;
-
-        let new_storage = {
-            let mut s = Vec::<u8>::with_capacity(HEADER_SIZE + new_text_len);
-            s.extend_from_slice(&storage[..HEADER_SIZE]);
-            s[HEADER_SIZE - 2..HEADER_SIZE].copy_from_slice(&header.text_len.to_be_bytes());
-            write_utf16be_words(utf16_words, &mut s);
-            s
-        };
-
-        Ok((
-            Self {
-                inner: Cow::Owned(new_storage),
-                header,
-            },
-            rest,
-        ))
+        Ok((this, rest))
     }
 
     fn get_text(&self) -> String {
-        let utf16_buf = self
-            .get_text_ptr()
-            .chunks(2)
-            .map(|chunk| chunk.try_into().unwrap())
-            .map(u16::from_be_bytes)
-            .collect::<Vec<_>>();
-        String::from_utf16_lossy(&utf16_buf)
+        if self.header.body_is_text() {
+            let utf16_buf = self
+                .get_body_ptr()
+                .chunks(2)
+                .map(|chunk| chunk.try_into().unwrap())
+                .map(u16::from_be_bytes)
+                .collect::<Vec<_>>();
+            String::from_utf16_lossy(&utf16_buf)
+        } else {
+            "<binary data>".into()
+        }
     }
 }
 
 impl<'a> Display for Widget<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}, text: {}", &self.header, self.get_text())
+        write!(f, "{}, body: {}", &self.header, self.get_text())
     }
 }
 
