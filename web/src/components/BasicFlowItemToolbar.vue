@@ -35,10 +35,10 @@ const moveDownClasses = computed(() => ({
   hide: !showMoveDown.value,
 }))
 const showBottomToolbar = computed(() => {
-  const { dt, next } = props.data
+  const { dto, next } = props.data
   return (
     next[0].kind === ITEM_NULL ||
-    (next[0].kind !== ITEM_UNKNOWN && timeGapIsLarge(next[0].dt, dt))
+    (next[0].kind !== ITEM_UNKNOWN && timeGapIsLarge(next[0].dto, dto))
   )
 })
 

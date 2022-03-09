@@ -10,10 +10,11 @@ class NeighborAnnotator {
   }
 
   preproc(items) {
-    const unknown = () => ({ dt: null, kind: ITEM_UNKNOWN })
+    const unknown = () => ({ dto: null, kind: ITEM_UNKNOWN })
     items.forEach((item) => {
       item.prev = [unknown(), unknown()]
       item.next = [unknown(), unknown()]
+      item.dto = [item.dt, item.offset]
     })
   }
 
@@ -31,8 +32,8 @@ class NeighborAnnotator {
         excerpt.kind = marker
         return
       }
-      const { dt, kind } = items[i]
-      patch(excerpt, { dt, kind })
+      const { dt, offset, kind } = items[i]
+      patch(excerpt, { dto: [dt, offset], kind })
     }
 
     for (let i = 0; i < L; i++) {

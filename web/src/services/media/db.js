@@ -66,7 +66,7 @@ export const mediaDB = new Resource("mediaDB")
     const dexie = new Dexie("media")
     dexie
       .version(DB_VERSION)
-      .stores({ data: "++id, dt, kind, type", log: "kind, hash" })
+      .stores({ data: "++id, [dt+offset], kind, type", log: "kind, hash" })
     dexie.open()
     const internal = new MediaDBInternal(dexie)
     await internal.init()
@@ -86,22 +86,22 @@ export const mediaDB = new Resource("mediaDB")
       limit = Math.max(end - start + 1, 0)
       if (!limit) return []
       const items = this._dexie.data
-        .orderBy("dt")
+        .orderBy("[dt+offset]")
         .offset(start)
         .limit(limit)
         .toArray()
       return items
     },
-    beforeDt({ dt, limit = 10, includes = false }) {
-      const opName = includes ? "belowOrEqual" : "below"
-      return this._dexie.data
-        .where("dt")
-        [opName](dt)
-        .limit(limit)
-        .reverse()
-        .sortBy("dt")
-        .then((data) => data.reverse())
-    },
+    // beforeDt({ dt, limit = 10, includes = false }) {
+    //   const opName = includes ? "belowOrEqual" : "below"
+    //   return this._dexie.data
+    //     .where("[dt+offset]")
+    //     [opName](dt)
+    //     .limit(limit)
+    //     .reverse()
+    //     .sortBy("[dt+offset]")
+    //     .then((data) => data.reverse())
+    // },
     after: dispatch(
       {
         index: "afterIndex",
@@ -123,28 +123,28 @@ export const mediaDB = new Resource("mediaDB")
         .toArray()
       return withFirstIndex ? [index, items] : items
     },
-    async afterDt({
-      dt,
-      limit = 10,
-      includes = false,
-      withFirstIndex = false,
-    }) {
-      const opName = includes ? "aboveOrEqual" : "above"
-      const items = await this._dexie.data
-        .where("dt")
-        [opName](dt)
-        .limit(limit)
-        .sortBy("dt")
-      if (!withFirstIndex) return items
-      const revOpName = includes ? "below" : "belowOrEqual"
-      const count = await this._dexie.data.where("dt")[revOpName](dt).count()
-      return [count, items]
-    },
+    // async afterDt({
+    //   dt,
+    //   limit = 10,
+    //   includes = false,
+    //   withFirstIndex = false,
+    // }) {
+    //   const opName = includes ? "aboveOrEqual" : "above"
+    //   const items = await this._dexie.data
+    //     .where("[dt+offset]")
+    //     [opName](dt)
+    //     .limit(limit)
+    //     .sortBy("[dt+offset]")
+    //   if (!withFirstIndex) return items
+    //   const revOpName = includes ? "below" : "belowOrEqual"
+    //   const count = await this._dexie.data.where("dt")[revOpName](dt).count()
+    //   return [count, items]
+    // },
     async countAll() {
       return await this._dexie.data.count()
     },
     async at(index) {
-      return await this._dexie.data.orderBy("dt").offset(index).first()
+      return await this._dexie.data.orderBy("[dt+offset]").offset(index).first()
     },
     async getHighlightedIndices() {
       const hit = this.cache.get(CE_HIGHLIGHTED_INDICES)
@@ -153,7 +153,7 @@ export const mediaDB = new Resource("mediaDB")
       const highlightedIds = new Set(
         await this._dexie.data.where("type").equals("m").primaryKeys()
       )
-      const allIds = await this._dexie.data.orderBy("dt").primaryKeys()
+      const allIds = await this._dexie.data.orderBy("[dt+offset]").primaryKeys()
       const ret = []
       for (let idx = 0; idx < allIds.length; idx++) {
         if (highlightedIds.has(allIds[idx])) ret.push(idx)

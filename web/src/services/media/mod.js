@@ -28,15 +28,8 @@ export const mediaModifier = {
     const buf = new Uint8Array(bufSize)
     let ptr = 0
     for (let i = 0; i < adds.length; i++) {
-      const { dt, type } = adds[i]
+      const { dt: base, offset, type } = adds[i]
       const text = texts[i]
-      let offset = dt % 1000
-      let base = Math.round((dt - offset) / 1000)
-      if (offset > 500) {
-        offset -= 1000
-        base += 1
-      }
-      offset = Math.floor(offset)
       buf[ptr] = type.charCodeAt(0)
       ptr += 1
       ptr = writeInt(buf, ptr, base, 4)
@@ -48,14 +41,7 @@ export const mediaModifier = {
     }
     buf[ptr] = 0
     ptr += 1
-    for (const dt of dels) {
-      let offset = dt % 1000
-      let base = Math.round((dt - offset) / 1000)
-      if (offset > 500) {
-        offset -= 1000
-        base += 1
-      }
-      offset = Math.floor(offset)
+    for (const [base, offset] of dels) {
       ptr = writeInt(buf, ptr, base, 4)
       buf[ptr] = offset
       ptr += 1

@@ -39,16 +39,15 @@ export const IMAGE_MEDIA = {
           const pid = (arr[ptr + 0] << 16) | (arr[ptr + 1] << 8) | arr[ptr + 2]
           ptr += 3
           const dt =
-            ((arr[ptr + 0] << 24) |
-              (arr[ptr + 1] << 16) |
-              (arr[ptr + 2] << 8) |
-              arr[ptr + 3]) *
-            1000
+            (arr[ptr + 0] << 24) |
+            (arr[ptr + 1] << 16) |
+            (arr[ptr + 2] << 8) |
+            arr[ptr + 3]
           ptr += 4
           const h = arr[ptr + 0]
           const w = arr[ptr + 1]
           ptr += 2
-          const item = { pid, h, w, dt, kind: "image" }
+          const item = { pid, h, w, dt, offset: 0, kind: "image" }
           chunk.push(item)
           counter += 1
         }
@@ -80,22 +79,20 @@ export const WIDGET_MEDIA = {
         while (counter < chunkSize && ptr < arr.byteLength) {
           const type = String.fromCharCode(arr[ptr])
           ptr += 1
-          const dtBase =
-            ((arr[ptr + 0] << 24) |
-              (arr[ptr + 1] << 16) |
-              (arr[ptr + 2] << 8) |
-              arr[ptr + 3]) *
-            1000
+          const dt =
+            (arr[ptr + 0] << 24) |
+            (arr[ptr + 1] << 16) |
+            (arr[ptr + 2] << 8) |
+            arr[ptr + 3]
           ptr += 4
-          let dtOffset = arr[ptr]
-          if (dtOffset >= 128) dtOffset -= 256
-          const dt = dtBase + dtOffset
+          let offset = arr[ptr]
+          if (offset >= 128) offset -= 256
           ptr += 1
           const textLen = (arr[ptr] << 8) | arr[ptr + 1]
           ptr += 2
           const text = textDecoder.decode(arr.subarray(ptr, ptr + textLen))
           ptr += textLen
-          chunk.push({ type, dt, text, kind: "widget" })
+          chunk.push({ type, dt, offset, text, kind: "widget" })
           counter += 1
         }
         if (ptr === arr.byteLength) done = true

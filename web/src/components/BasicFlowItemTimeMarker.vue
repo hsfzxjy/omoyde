@@ -1,19 +1,19 @@
 <script setup>
 import { computed } from "vue"
 import { ITEM_NULL } from "../services/media/local"
-import { timeGapIsLarge } from "../services/media/misc"
+import { timeGapIsLarge, dto2Date } from "../services/media/misc"
 
 const props = defineProps({ data: Object })
 const visibility = computed(() => {
-  let { dt, prev } = props.data
+  let { dto, prev } = props.data
   if (typeof prev[0].kind === "symbol") {
     const show = prev[0].kind === ITEM_NULL
     return { year: show, date: show, time: show }
   }
-  let prevDt = prev[0].dt
-  const showTime = timeGapIsLarge(dt, prevDt)
-  dt = new Date(dt)
-  prevDt = new Date(prevDt)
+  const prevDto = prev[0].dto
+  const showTime = timeGapIsLarge(dto, prevDto)
+  const dt = dto2Date(dto)
+  const prevDt = dto2Date(prevDto)
   return {
     year: showTime && dt.getFullYear() !== prevDt.getFullYear(),
     date:
@@ -25,7 +25,7 @@ const visibility = computed(() => {
 })
 const texts = computed(() => {
   const pad2 = (x) => x.toString().padStart(2, "0")
-  const dt = new Date(props.data.dt)
+  const dt = dto2Date(props.data.dto)
   const Y = dt.getFullYear()
   const M = pad2(dt.getMonth() + 1)
   const D = pad2(dt.getDate())
