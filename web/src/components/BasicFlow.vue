@@ -22,8 +22,6 @@ const flowBus = new EventEmitter()
 provide("flowBus", flowBus)
 const currentItems = reactive([])
 const tracker = reactive({
-  date: 0,
-  pid: 0,
   offset: 0,
   localIndex: 0,
   globalIndex: 0,

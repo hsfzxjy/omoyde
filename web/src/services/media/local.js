@@ -77,16 +77,9 @@ export class MediaLocalView {
     this._annotator.preproc(items)
     this._items.replaceAll(items)
 
-    if (items.length) {
-      const first = items[0]
-      patch(this._tracker, {
-        date: +first.dt,
-        pid: first.pid,
-        offset: 0,
-        localIndex: nForward,
-      })
-    }
     patch(this._tracker, {
+      offset: 0,
+      localIndex: nForward,
       globalIndex: globalIndex + nForward,
       atStart: targetIndex === nForward,
       atEnd: items.length < this._limit + 1 + nForward,
