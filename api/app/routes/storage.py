@@ -3,7 +3,7 @@ from sts.sts import Sts
 from qcloud_cos import CosServiceError
 
 from app.prelude import *
-from app.core._widget import FFIVec, mod_widgets, display_widgets
+from app.core import _widget
 
 REDIS_KEY_COS_CREDENTIAL = ":sts:crendential"
 OBJECT_HEADERS = {
@@ -52,13 +52,13 @@ async def mod_widgets(mods, expected_hash):
             raise ClientFileTooOld()
         raise e
     old_items = bytearray(b"").join(r["Body"])
-    new_items = mod_widgets(
-        FFIVec.from_bytes(old_items),
-        FFIVec.from_bytes(mods),
+    new_items = _widget.mod_widgets(
+        _widget.FFIVec.from_bytes(old_items),
+        _widget.FFIVec.from_bytes(mods),
     ).contents
     with new_items.guard():
-        display_widgets(FFIVec.from_bytes(old_items))
-        display_widgets(new_items)
+        _widget.display_widgets(_widget.FFIVec.from_bytes(old_items))
+        _widget.display_widgets(new_items)
         new_items = new_items.to_bytes()
 
     r = cos_client.put_object(
