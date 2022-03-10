@@ -50,7 +50,7 @@ function onMoveUp() {
 }
 function onMoveDown() {
   const index = props.globalIndex
-  if (index === dataSource.countAll() - 1) return
+  if (index === dataSource.countAll().value - 1) return
   const newIndex = moveBackward(dataSource, index, props.data)
   flowBus.emit("update-index", newIndex, props.localIndex)
 }

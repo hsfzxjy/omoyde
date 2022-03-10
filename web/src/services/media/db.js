@@ -1,5 +1,6 @@
 import Dexie from "dexie"
 import EventEmitter from "events"
+import { ref } from "vue"
 import { LSCache } from "../../utils/cache"
 import { dispatch, keyBuilder } from "../../utils/misc"
 import { Resource } from "../../utils/resource"
@@ -108,7 +109,7 @@ export const mediaDB = new Resource("mediaDB")
       return withFirstIndex ? [index, items] : items
     },
     async countAll() {
-      return await this._dexie.data.count()
+      return ref(await this._dexie.data.count())
     },
     async at(index) {
       return await this._dexie.data.orderBy("[dt+offset]").offset(index).first()

@@ -19,11 +19,11 @@ const thumbStyle = computed(() => {
   const frac =
     state.touching && state.touchingThumbFraction !== null
       ? state.touchingThumbFraction
-      : props.currentItemGlobalIndex / (nItems - 1)
+      : props.currentItemGlobalIndex / (nItems.value - 1)
   return { top: `${frac * 100}%` }
 })
 const touchingGlobalIndex = computed(() => {
-  const L = nItems
+  const L = nItems.value
   const frac = state.touchingThumbFraction
   const margin = 1 / (L - 1)
   let index = Math.floor(frac * (L - 1))

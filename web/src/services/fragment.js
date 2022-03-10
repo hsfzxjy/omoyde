@@ -14,7 +14,7 @@ const overlay = {
     return this._mutex.guardOrWait(async () => {
       const ds = _getDataSource()
       const bottomSize = await ds.countAll()
-      this._ds = new OverlayDS(ds, bottomSize)
+      this._ds = new OverlayDS(ds, bottomSize.value)
     })
   },
   async get() {

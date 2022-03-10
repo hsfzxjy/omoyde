@@ -9,7 +9,7 @@ function makeAnnotation(index, classes) {
   return {
     index,
     style: {
-      top: `${(index / (nItems - 1)) * 100}%`,
+      top: `${(index / (nItems.value - 1)) * 100}%`,
     },
     classes: ["basic-flow-tracker-annotation", ...classes],
   }

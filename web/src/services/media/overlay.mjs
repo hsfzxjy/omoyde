@@ -27,6 +27,7 @@
 //
 // As of concrete examples, check test_overlay.mjs.
 
+import { reactive, ref, toRaw } from "vue"
 import { dispatch, patch } from "../../utils/misc"
 
 export function Bridge(bottom_size, adds, dels) {
@@ -226,6 +227,7 @@ export class OverlayDS {
     this._adds = [[bottomSize - 1, []]]
     this._dels = [[-1, null]]
     this._bridge = Bridge(bottomSize, this._adds, this._dels)
+    this._size = ref(bottomSize)
   }
   async _query(tstart, tend) {
     const [bstart, bend, range] = this._bridge.range_t2b(tstart, tend)
@@ -274,7 +276,7 @@ export class OverlayDS {
     }
   }
   countAll() {
-    return this._bridge.size()
+    return this._size
   }
   before(...args) {
     return dispatch({ index: "beforeIndex" }, this)(...args)
