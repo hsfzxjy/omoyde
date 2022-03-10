@@ -1,4 +1,4 @@
-import { Bridge } from "./overlay.mjs"
+import { Bridge } from "./overlay_bridge.mjs"
 
 function eq(a, b) {
   let i = 0
