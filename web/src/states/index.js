@@ -5,6 +5,11 @@ export const store = reactive({
   ui: {
     sidebarExpanded: false,
     flow: "BasicFlow",
+    dialog: {
+      show: false,
+      component: null,
+      data: null,
+    },
   },
   fragment: { currentName: "default", editting: true },
 })

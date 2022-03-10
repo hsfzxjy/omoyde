@@ -1,6 +1,7 @@
 <script setup>
 import TheSidebar from "./components/TheSidebar.vue"
 import TheMainContainer from "./components/TheMainContainer.vue"
+import TheDialog from "./components/TheDialog.vue"
 import { store } from "./states"
 import { computed } from "vue"
 
@@ -13,6 +14,7 @@ const mainWrapperClass = computed(() => ({
   <div id="main-wrapper" :class="mainWrapperClass">
     <the-sidebar />
     <the-main-container />
+    <the-dialog />
   </div>
 </template>
 
