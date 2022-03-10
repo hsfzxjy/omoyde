@@ -5,13 +5,15 @@ const dataSource = inject("dataSource")
 const hlItems = await dataSource.getHlItems()
 const nItems = await dataSource.countAll()
 
-function makeAnnotation(index, classes) {
+function makeAnnotation(index, type) {
+  if (type === "del") index -= 0.5
   return {
+    key: `${index}-${type}`,
     index,
     style: {
       top: `${(index / (nItems.value - 1)) * 100}%`,
     },
-    classes: ["basic-flow-tracker-annotation", ...classes],
+    classes: ["basic-flow-tracker-annotation", type],
   }
 }
 
@@ -31,10 +33,18 @@ const annotations = computed(() =>
 
 <style lang="scss">
 .basic-flow-tracker-annotation {
-  &.hl {
+  border-width: 1px 0 0 0;
+  &.m {
     border-color: #999;
     border-style: dashed;
-    border-width: 1px 0 0 0;
+  }
+  &.add {
+    border-color: green;
+    border-style: solid;
+  }
+  &.del {
+    border-color: red;
+    border-style: solid;
   }
 }
 </style>
