@@ -2,7 +2,7 @@
 import { computed, inject } from "vue"
 
 const dataSource = inject("dataSource")
-const highlightedIndices = await dataSource.getHighlightedIndices()
+const hlItems = await dataSource.getHlItems()
 const nItems = await dataSource.countAll()
 
 function makeAnnotation(index, classes) {
@@ -15,10 +15,9 @@ function makeAnnotation(index, classes) {
   }
 }
 
-const highlightedAnnotations = highlightedIndices.map((index) =>
-  makeAnnotation(index, ["hl"])
+const annotations = computed(() =>
+  hlItems.map(([index, type]) => makeAnnotation(index, type))
 )
-const annotations = computed(() => highlightedAnnotations)
 </script>
 
 <template>

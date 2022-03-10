@@ -9,7 +9,7 @@ import { allMedias } from "./grocery"
 const DB_VERSION = 1
 
 const build_cache_key = keyBuilder(["mediaDB", "cache"], Symbol)
-const CE_HIGHLIGHTED_INDICES = build_cache_key("highlighted_indices")
+const CE_HIGHLIGHTED_ITEMS = build_cache_key("highlighted_items")
 
 // TODO: better name
 class MediaDBInternal {
@@ -114,8 +114,8 @@ export const mediaDB = new Resource("mediaDB")
     async at(index) {
       return await this._dexie.data.orderBy("[dt+offset]").offset(index).first()
     },
-    async getHighlightedIndices() {
-      const hit = this.cache.get(CE_HIGHLIGHTED_INDICES)
+    async getHlItems() {
+      const hit = this.cache.get(CE_HIGHLIGHTED_ITEMS)
       if (hit !== null) return hit
 
       const highlightedIds = new Set(
@@ -124,9 +124,9 @@ export const mediaDB = new Resource("mediaDB")
       const allIds = await this._dexie.data.orderBy("[dt+offset]").primaryKeys()
       const ret = []
       for (let idx = 0; idx < allIds.length; idx++) {
-        if (highlightedIds.has(allIds[idx])) ret.push(idx)
+        if (highlightedIds.has(allIds[idx])) ret.push([idx, "m"])
       }
-      this.cache.set(CE_HIGHLIGHTED_INDICES, ret)
+      this.cache.set(CE_HIGHLIGHTED_ITEMS, ret)
       return ret
     },
   })
