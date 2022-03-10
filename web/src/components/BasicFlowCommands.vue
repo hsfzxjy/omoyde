@@ -30,7 +30,7 @@ async function onSave() {
   position: fixed;
   display: flex;
   flex-direction: row-reverse;
-  width: 100%;
+  right: 0;
   z-index: 1000;
 }
 
