@@ -39,7 +39,10 @@ bridge = Bridge(
     [2, ["c", "d"]],
     [3, ["e"]],
   ],
-  [-1, 2]
+  [
+    [-1, null],
+    [2, null],
+  ]
 )
 
 testcases = [
@@ -200,7 +203,11 @@ bridge = Bridge(
     [2, ["c", "d"]],
     [3, ["e"]],
   ],
-  [-1, 1, 2]
+  [
+    [-1, null],
+    [1, null],
+    [2, null],
+  ]
 )
 
 testcases = [
