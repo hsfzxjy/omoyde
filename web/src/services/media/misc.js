@@ -10,6 +10,36 @@ export function dto2Date([dt, o]) {
   return new Date(dt * 1000 + o)
 }
 
+export function remove(dataSource, index, item) {
+  dataSource.remove(index, index, [item.dto])
+  return index
+}
+
+export function addBefore(dataSource, index, item, anchorItem) {
+  item = clone(toRaw(item))
+  let { dt, offset, kind } = anchorItem
+  if (kind === "image") offset -= 1
+  item.dt = dt
+  item.offset = offset
+  dataSource.insert(index, [item])
+  return index
+}
+
+export function addAfter(dataSource, index, item, anchorItem) {
+  item = clone(toRaw(item))
+  let { dt, offset } = anchorItem
+  item.dt = dt
+  item.offset = offset
+  dataSource.insert(index, [item])
+  return index
+}
+
+export function edit(dataSource, index, item) {
+  item = clone(toRaw(item))
+  dataSource.inplaceMutate(index, item, [item.dto])
+  return index
+}
+
 export function moveForward(dataSource, index, item) {
   item = clone(toRaw(item))
   const {
@@ -29,7 +59,7 @@ export function moveForward(dataSource, index, item) {
         ? [prev0dto[0], prev0dto[1] - 1]
         : prev1dto
 
-    ;[item.dt,item.offset] = newDto
+    ;[item.dt, item.offset] = newDto
     dataSource.moveForward(index, item, [dto])
     return index - 1
   }

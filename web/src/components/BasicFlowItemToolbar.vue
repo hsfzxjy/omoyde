@@ -1,12 +1,10 @@
 <script setup>
 import { computed, inject } from "vue"
 import { ITEM_NULL, ITEM_UNKNOWN } from "../services/media/local"
-import {
-  moveBackward,
-  moveForward,
-  timeGapIsLarge,
-} from "../services/media/misc"
+import { timeGapIsLarge } from "../services/media/misc"
+import * as misc from "../services/media/misc"
 import { store } from "../states"
+import { Dialog } from "../states/dialog"
 
 const props = defineProps({
   data: Object,
@@ -41,28 +39,62 @@ const showBottomToolbar = computed(() => {
     (next[0].kind !== ITEM_UNKNOWN && timeGapIsLarge(next[0].dto, dto))
   )
 })
+const braceClasses = computed(() => ({
+  "basic-flow-item-brace": true,
+  added: props.data.isAdded,
+  "del-after": props.data.delAfter,
+}))
+
+function jumpTo(newIndex = null) {
+  if (newIndex === null) newIndex = props.globalIndex
+  flowBus.emit("update-index", newIndex, props.localIndex)
+}
 
 function onMoveUp() {
   const index = props.globalIndex
   if (index === 0) return
-  const newIndex = moveForward(dataSource, index, props.data)
-  flowBus.emit("update-index", newIndex, props.localIndex)
+  const newIndex = misc.moveForward(dataSource, index, props.data)
+  jumpTo(newIndex)
 }
 function onMoveDown() {
   const index = props.globalIndex
   if (index === dataSource.countAll().value - 1) return
-  const newIndex = moveBackward(dataSource, index, props.data)
-  flowBus.emit("update-index", newIndex, props.localIndex)
+  const newIndex = misc.moveBackward(dataSource, index, props.data)
+  jumpTo(newIndex)
+}
+async function onEdit() {
+  const newItem = await Dialog.show("edit-widget", props.data)
+  if (newItem === null) return
+  misc.edit(dataSource, props.globalIndex, newItem)
+  jumpTo()
+}
+async function onAddBefore() {
+  let item = { kind: "widget", text: "", type: "q" }
+  item = await Dialog.show("edit-widget", item)
+  if (item === null) return
+  misc.addBefore(dataSource, props.globalIndex - 1, item, props.data)
+  jumpTo()
+}
+async function onAddAfter() {
+  let item = { kind: "widget", text: "", type: "q" }
+  item = await Dialog.show("edit-widget", item)
+  if (item === null) return
+  misc.addAfter(dataSource, props.globalIndex, item, props.data)
+  jumpTo()
+}
+function onRemove() {
+  misc.remove(dataSource, props.globalIndex, props.data)
+  jumpTo()
 }
 </script>
 
 <template>
   <template v-if="show">
     <div class="basic-flow-item-toolbar top">
-      <div class="basic-flow-item-toolbar-button">ADD</div>
+      <div class="basic-flow-item-toolbar-button" @click="onAddBefore">ADD</div>
       <template v-if="edittable">
-        <div class="basic-flow-item-toolbar-button">EDIT</div>
-        <div class="basic-flow-item-toolbar-button">DEL</div>
+        <div class="basic-flow-item-toolbar-button" @click="onEdit">EDIT</div>
+        <div class="basic-flow-item-toolbar-button" @click="onRemove">DEL</div>
         <div class="basic-flow-item-toolbar-splitter"></div>
         <div :class="moveDownClasses" @click="onMoveDown">DOWN</div>
         <div :class="moveUpClasses" @click="onMoveUp">UP</div>
@@ -70,11 +102,13 @@ function onMoveDown() {
     </div>
     <div class="basic-flow-item-toolbar bottom">
       <template v-if="showBottomToolbar">
-        <div class="basic-flow-item-toolbar-button">ADD</div>
+        <div class="basic-flow-item-toolbar-button" @click="onAddAfter">
+          ADD
+        </div>
       </template>
     </div>
     <div class="basic-flow-item-toolbar spacing"></div>
-    <div class="basic-flow-item-brace"></div>
+    <div :class="braceClasses"></div>
   </template>
 </template>
 
@@ -88,6 +122,26 @@ function onMoveDown() {
   border-width: 2px 0 2px 2px;
   border-style: dashed;
   border-color: #777;
+
+  &.added {
+    border-style: solid;
+    border-color: green;
+  }
+  &.del-after::after {
+    content: " ";
+    height: 0;
+    width: 0;
+    border-style: solid;
+    position: absolute;
+
+    $h: 0.5rem;
+    bottom: -$h * 2;
+    left: -$h;
+    border-top: $h solid transparent;
+    border-bottom: $h solid transparent;
+    border-right-color: transparent;
+    border-left: $h solid red;
+  }
 }
 
 .basic-flow-item-toolbar {
