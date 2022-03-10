@@ -108,7 +108,6 @@ function onRemove() {
         </div>
       </template>
     </div>
-    <div class="basic-flow-item-toolbar spacing"></div>
     <div :class="braceClasses"></div>
   </template>
 </template>
@@ -164,15 +163,6 @@ function onRemove() {
   &.bottom {
     border-bottom: #777 dashed 1px;
     order: 10;
-  }
-
-  &.spacing {
-    height: 0.8rem;
-    order: 11;
-
-    + .basic-flow-item-brace {
-      bottom: 0.8rem;
-    }
   }
 }
 .basic-flow-item-toolbar-splitter {

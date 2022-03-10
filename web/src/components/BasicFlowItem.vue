@@ -53,5 +53,10 @@ onBeforeUnmount(() => {
   flex-direction: column;
   align-items: center;
   position: relative;
+
+  &.editting {
+    margin: 0 !important;
+    margin-bottom: 1rem !important;
+  }
 }
 </style>
