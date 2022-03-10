@@ -42,6 +42,7 @@ const showBottomToolbar = computed(() => {
 const braceClasses = computed(() => ({
   "basic-flow-item-brace": true,
   added: props.data.isAdded,
+  "del-before": props.data.delBefore,
   "del-after": props.data.delAfter,
 }))
 
@@ -127,6 +128,8 @@ function onRemove() {
     border-style: solid;
     border-color: green;
   }
+  $h: 0.5rem;
+  &.del-before::after,
   &.del-after::after {
     content: " ";
     height: 0;
@@ -134,13 +137,17 @@ function onRemove() {
     border-style: solid;
     position: absolute;
 
-    $h: 0.5rem;
-    bottom: -$h * 2;
     left: -$h;
     border-top: $h solid transparent;
     border-bottom: $h solid transparent;
     border-right-color: transparent;
     border-left: $h solid red;
+  }
+  &.del-before::after {
+    top: -$h * 2;
+  }
+  &.del-after::after {
+    bottom: -$h * 2;
   }
 }
 
