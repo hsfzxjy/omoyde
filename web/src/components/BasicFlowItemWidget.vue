@@ -35,6 +35,7 @@ defineExpose({
 .basic-flow-item-widget {
   @extend .custom-font;
 
+  max-width: 80vw;
   display: inline-block;
 
   &.m {
