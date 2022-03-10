@@ -249,16 +249,99 @@ export class OverlayDS {
     this._dels = [[-1, null]]
     this._bridge = Bridge(bottomSize, this._adds, this._dels)
     this._size = ref(bottomSize)
+    this._hls = reactive([])
+    this._bottomHls = null
+  }
+  _sync() {
+    if (this._bottomHls === null) {
+      throw new Error("`_hls` not initialized before mods are made")
+    }
+    this._size.value = this._bridge.size()
+    const adds = this._adds
+    const dels = this._dels
+    const hls = this._bottomHls
+    const la = adds.length
+    const ld = dels.length
+    const lh = hls.length
+    let delta = 0
+    let idx
+    let ia = 0
+    let id = 1
+    let ih = 0
+    let ret = []
+    let prev = []
+    while (ia < la || id < ld || ih < lh) {
+      const [addi, addx] = adds[ia] || []
+      const deli = (dels[id] || [])[0]
+      const [hlsi, hlsx] = hls[ih] || []
+      let mask =
+        ((addi !== undefined) << 2) |
+        ((deli !== undefined) << 1) |
+        (hlsi !== undefined)
+      inner: while (true)
+        switch (mask) {
+          case 0b000:
+            throw new Error("unreachable")
+          case 0b001:
+            ret.push((prev = [hlsi + delta, hlsx]))
+            ih++
+            break inner
+          case 0b010:
+            idx = deli + delta
+            if (prev[1] !== "del" || idx !== prev[0]) {
+              ret.push((prev = [idx, "del"]))
+            }
+            delta--
+            id++
+            break inner
+          case 0b011:
+            if (deli <= hlsi) {
+              mask = 0b010
+              if (deli === hlsi) ih++
+            } else {
+              mask = 0b001
+            }
+            continue inner
+          default:
+            if (
+              (mask & 0b010 && addi >= deli) ||
+              (mask & 0b001 && addi >= hlsi)
+            ) {
+              mask &= 0b011
+              continue inner
+            }
+            for (let i = 0; i < addx.length; i++) {
+              delta++
+              ret.push((prev = [delta + addi, "add"]))
+            }
+            ia++
+            break inner
+        }
+    }
+    this._hls.replaceAll(ret)
   }
   async _query(tstart, tend) {
-    const [bstart, bend, range] = this._bridge.range_t2b(tstart, tend)
+    const [[bstart, bend, range], das] = this._bridge.range_t2b(
+      tstart,
+      tend,
+      false,
+      true
+    )
     if (bstart > bend) return range
     const items = await this._bottom.afterIndex({
       index: bstart,
       limit: bend - bstart + 1,
       includes: true,
     })
-    return range.map((x) => (typeof x === "number" ? items[x] : x))
+    return range.map((x, idx) => {
+      const isAdded = typeof x !== "number"
+      const item = isAdded ? patch(x, { id: Symbol() }) : items[x]
+      patch(item, {
+        isAdded,
+        delAfter: !!das[idx],
+      })
+      return item
+    })
   }
   collect() {
     const { adds, dels } = this._bridge._internal()
@@ -268,13 +351,15 @@ export class OverlayDS {
     return [flatAdds, flatDels]
   }
   remove(tstart, tend, extras = []) {
-    return this._bridge.remove(tstart, tend, extras)
+    this._bridge.remove(tstart, tend, extras)
+    this._sync()
   }
   insert(tstart, items) {
     items.forEach((item) => {
       item.id = Symbol()
     })
-    return this._bridge.insert(tstart, items)
+    this._bridge.insert(tstart, items)
+    this._sync()
   }
   // caller should also provide item, so that we don't have to query bottom DS
   moveForward(index, item, extras = []) {
@@ -323,8 +408,12 @@ export class OverlayDS {
   async at(index) {
     return (await this._query(index, index))[0]
   }
-  getHighlightedIndices() {
-    // TODO
-    return this._bottom.getHighlightedIndices()
+  async getHlItems() {
+    if (this._bottomHls === null) {
+      const bottomHls = await this._bottom.getHlItems()
+      this._bottomHls = toRaw(bottomHls)
+      this._sync()
+    }
+    return this._hls
   }
 }
