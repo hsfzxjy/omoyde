@@ -78,7 +78,7 @@ export const mediaDB = new Resource("mediaDB")
       const item = await this._dexie.log.where("kind").equals(kind).first()
       return item.hash
     },
-    before: dispatch({ index: "beforeIndex", dt: "beforeDt" }, () => mediaDB),
+    before: dispatch({ index: "beforeIndex" }, () => mediaDB),
     beforeIndex({ index, limit = 10, includes = false }) {
       let end = index
       if (!includes) end--
@@ -92,23 +92,7 @@ export const mediaDB = new Resource("mediaDB")
         .toArray()
       return items
     },
-    // beforeDt({ dt, limit = 10, includes = false }) {
-    //   const opName = includes ? "belowOrEqual" : "below"
-    //   return this._dexie.data
-    //     .where("[dt+offset]")
-    //     [opName](dt)
-    //     .limit(limit)
-    //     .reverse()
-    //     .sortBy("[dt+offset]")
-    //     .then((data) => data.reverse())
-    // },
-    after: dispatch(
-      {
-        index: "afterIndex",
-        dt: "afterDt",
-      },
-      () => mediaDB
-    ),
+    after: dispatch({ index: "afterIndex" }, () => mediaDB),
     async afterIndex({
       index,
       limit = 10,
@@ -123,23 +107,6 @@ export const mediaDB = new Resource("mediaDB")
         .toArray()
       return withFirstIndex ? [index, items] : items
     },
-    // async afterDt({
-    //   dt,
-    //   limit = 10,
-    //   includes = false,
-    //   withFirstIndex = false,
-    // }) {
-    //   const opName = includes ? "aboveOrEqual" : "above"
-    //   const items = await this._dexie.data
-    //     .where("[dt+offset]")
-    //     [opName](dt)
-    //     .limit(limit)
-    //     .sortBy("[dt+offset]")
-    //   if (!withFirstIndex) return items
-    //   const revOpName = includes ? "below" : "belowOrEqual"
-    //   const count = await this._dexie.data.where("dt")[revOpName](dt).count()
-    //   return [count, items]
-    // },
     async countAll() {
       return await this._dexie.data.count()
     },

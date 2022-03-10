@@ -277,17 +277,14 @@ export class OverlayDS {
     return this._bridge.size()
   }
   before(...args) {
-    return dispatch({ dt: "beforeDt", index: "beforeIndex" }, this)(...args)
+    return dispatch({ index: "beforeIndex" }, this)(...args)
   }
   async beforeIndex({ index, limit = 10, includes = false }) {
     if (!includes) index--
     return await this._query(index - limit + 1, index)
   }
-  beforeDt() {
-    throw new Error("`.beforeDt()` is not implemented on OverlayDS")
-  }
   after(...args) {
-    return dispatch({ dt: "afterDt", index: "afterIndex" }, this)(...args)
+    return dispatch({ index: "afterIndex" }, this)(...args)
   }
   async afterIndex({
     index,
@@ -299,9 +296,7 @@ export class OverlayDS {
     const items = await this._query(index, index + limit - 1)
     return withFirstIndex ? [index, items] : items
   }
-  afterDt() {
-    throw new Error("`.afterDt()` is not implemented on OverlayDS")
-  }
+
   async at(index) {
     return (await this._query(index, index))[0]
   }
