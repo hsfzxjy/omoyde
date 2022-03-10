@@ -228,9 +228,7 @@ await itemsPuller.jumpTo({
 .basic-flow-sentinel {
   height: 1rem;
   width: 1px;
-  float: left;
   z-index: 0;
-  border: 1px solid red;
 }
 .basic-flow-sentinel-top {
   top: 1rem;
