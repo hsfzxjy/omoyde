@@ -125,7 +125,14 @@ export class OverlayDS {
     })
     const ret = range.map((x, idx) => {
       const isAdded = typeof x !== "number"
-      const item = isAdded ? patch(x, { id: Symbol() }) : items[x]
+      let item
+      if (isAdded) {
+        item = x
+        item.id = Symbol()
+      } else {
+        item = items[x]
+        item._origIndex = bstart + x
+      }
       patch(item, {
         isAdded,
         delBefore: false,
@@ -157,12 +164,18 @@ export class OverlayDS {
   }
   // caller should also provide item, so that we don't have to query bottom DS
   moveForward(index, item, extras = []) {
-    this.remove(index, index, extras)
-    this.insert(index - 2, [item])
+    this._bridge.remove(index, index, extras)
+    item.id = Symbol()
+    this._bridge.insert(index - 2, [item])
+    this._bridge.squash()
+    this._sync()
   }
   moveBackward(index, item, extras = []) {
-    this.remove(index, index, extras)
-    this.insert(index, [item])
+    this._bridge.remove(index, index, extras)
+    item.id = Symbol()
+    this._bridge.insert(index, [item])
+    this._bridge.squash()
+    this._sync()
   }
   inplaceMutate(index, item, extras = []) {
     const x = this._bridge.range_t2b(index, index, true)[2][0]
@@ -171,9 +184,11 @@ export class OverlayDS {
       item.id = Symbol()
       adds[ia][1][i] = item
     } else {
-      this.remove(index, index, extras)
-      this.insert(index - 1, [item])
+      this._bridge.remove(index, index, extras)
+      this._bridge.insert(index - 1, [item])
     }
+    this._bridge.squash()
+    this._sync()
   }
   countAll() {
     return this._size

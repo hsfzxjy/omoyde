@@ -7,6 +7,91 @@ export function Bridge(bottom_size, adds, dels) {
     _internal() {
       return { adds, dels, size }
     },
+    squash() {
+      let ia = 0
+      let id = 0
+      while (ia < adds.length && id < dels.length) {
+        const [addi, addx] = adds[ia]
+        const addxl = addx.length
+        const [deli, _] = dels[id]
+        const delta = addi - deli
+        if (delta < -1) {
+          ia++
+        } else if (delta > 0) {
+          id++
+        } else if (delta === 0) {
+          const paddi = ia === 0 ? null : adds[ia - 1][0]
+          let n = 0
+          let common
+          while (true) {
+            common = true
+            for (let i = 0, j = id; i < n && j > 0; i++, j--) {
+              const [delj, deljx] = dels[j]
+              const addc = addx[n - 1 - i]
+              if (
+                delj === paddi ||
+                delj !== deli - i ||
+                delj !== addc._origIndex ||
+                deljx[0] !== addc.dt ||
+                addc._modified
+              ) {
+                common = false
+                break
+              }
+            }
+            if ((common && n) || n === addxl || n === id) break
+            n++
+          }
+          if (n && common) {
+            addx.splice(0, n)
+            if (!addx.length && ia !== adds.length - 1) {
+              adds.splice(ia, 1)
+              ia -= 1
+            }
+            dels.splice(id - n + 1, n)
+            id -= n
+          }
+          ia++
+          id++
+        } else {
+          /* else if (delta === -1) */
+          let n = 0
+          const naddi = ia === adds.length - 1 ? null : adds[ia + 1][0]
+          const dl = dels.length
+          let common
+          while (true) {
+            common = true
+            for (let i = 0, j = id; i < n && j < dl; i++, j++) {
+              const [delj, deljx] = dels[j]
+              const addc = addx[addxl - n + i]
+              if (
+                delj === naddi ||
+                delj !== deli + i ||
+                delj !== addc._origIndex ||
+                deljx[0] !== addc.dt ||
+                addc._modified
+              ) {
+                common = false
+                break
+              }
+            }
+            if ((common && n) || n === addxl || n + id === dl) break
+            n++
+          }
+          if (n && common) {
+            addx.splice(addxl - n, n)
+            if (!addx.length && ia !== adds.length - 1) {
+              adds.splice(ia, 1)
+              ia -= 1
+            }
+            dels.splice(id, n)
+            id -= 1
+          }
+          ia++
+          id++
+        }
+      }
+    },
     // remove range [tstart, tend]
     remove(tstart, tend, extras = []) {
       const [bstart, _, range] = this.range_t2b(tstart, tend, true)

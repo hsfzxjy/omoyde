@@ -21,6 +21,7 @@ export function addBefore(dataSource, index, item, anchorItem) {
   if (kind === "image") offset -= 1
   item.dt = dt
   item.offset = offset
+  item._modified = true
   dataSource.insert(index, [item])
   return index
 }
@@ -30,12 +31,14 @@ export function addAfter(dataSource, index, item, anchorItem) {
   let { dt, offset } = anchorItem
   item.dt = dt
   item.offset = offset
+  item._modified = true
   dataSource.insert(index, [item])
   return index
 }
 
 export function edit(dataSource, index, item) {
   item = clone(toRaw(item))
+  item._modified = true
   dataSource.inplaceMutate(index, item, [item.dto])
   return index
 }
@@ -48,9 +51,11 @@ export function moveForward(dataSource, index, item) {
   } = item
   delete item.prev
   delete item.next
+  if (item._origIndex === undefined) item._origIndex = index
   if (timeGapIsLarge(dto, prev0dto)) {
     ;[item.dt, item.offset] = prev0dto
     item.offset += 1
+    // if (item._isAdded) item._modified = true
     dataSource.inplaceMutate(index, item, [dto])
     return index
   } else {
@@ -73,9 +78,11 @@ export function moveBackward(dataSource, index, item) {
   } = item
   delete item.prev
   delete item.next
+  if (item._origIndex === undefined) item._origIndex = index
   if (timeGapIsLarge(next0dto, dto)) {
     ;[item.dt, item.offset] = next0dto
     item.offset -= 1
+    // if (item._isAdded) item._modified = true
     dataSource.inplaceMutate(index, item, [dto])
     return index
   } else {
