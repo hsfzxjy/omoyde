@@ -156,12 +156,13 @@ function onRemove() {
   width: 80vw;
 
   &.top {
-    border-top: #777 dashed 1px;
+    border-top: #777 dashed 2px;
+
     order: -2;
   }
 
   &.bottom {
-    border-bottom: #777 dashed 1px;
+    border-bottom: #777 dashed 2px;
     order: 10;
   }
 }
