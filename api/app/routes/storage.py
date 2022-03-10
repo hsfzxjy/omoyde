@@ -57,8 +57,8 @@ async def mod_widgets(mods, expected_hash):
         _widget.FFIVec.from_bytes(mods),
     ).contents
     with new_items.guard():
-        _widget.display_widgets(_widget.FFIVec.from_bytes(old_items))
-        _widget.display_widgets(new_items)
+        # _widget.display_widgets(_widget.FFIVec.from_bytes(old_items))
+        # _widget.display_widgets(new_items)
         new_items = new_items.to_bytes()
 
     r = cos_client.put_object(
