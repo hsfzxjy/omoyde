@@ -94,7 +94,7 @@ export function Bridge(bottom_size, adds, dels) {
     size() {
       return size
     },
-    range_t2b(tstart, tend, with_handle = false) {
+    range_t2b(tstart, tend, with_handle = false, with_da = false) {
       if (tstart < 0) tstart = 0
       if (tend >= size) tend = size - 1
       if (tstart > tend) return [tstart, tend, []]
@@ -102,7 +102,8 @@ export function Bridge(bottom_size, adds, dels) {
       function make_ret() {
         let i = ret.length - 1
         while (i >= 0 && typeof ret[i] !== "number") i--
-        return [bstart, bstart + (i === -1 ? -1 : ret[i]), ret]
+        const new_r = [bstart, bstart + (i === -1 ? -1 : ret[i]), ret]
+        return with_da ? [new_r, das] : new_r
       }
 
       let ia = 0
@@ -116,6 +117,7 @@ export function Bridge(bottom_size, adds, dels) {
       let bstart = 0
       const tn = tend - tstart + 1
       const ret = new Array(tn)
+      const das = with_da ? new Array(tn) : []
       while (ia < la || id < ld) {
         function wrap_addx(i) {
           if (!with_handle) return addx[i]
@@ -148,6 +150,7 @@ export function Bridge(bottom_size, adds, dels) {
                 ri++
                 ret[ri] = bi - bstart
               }
+              if (with_da && bi === deli - 1 && ri >= 0) das[ri] = true
               bi += 1
               if (ri === tn - 1) return make_ret()
             }
@@ -166,12 +169,20 @@ export function Bridge(bottom_size, adds, dels) {
             bstart = addi + 1
             let i = tstart - (addi - bi + ti - ndel) - 2
             ti += i + 1 + addi - bi - 1
+            if (with_da && i === -1 && ri >= 0 && ndel) das[ri] = true
             do {
               ri++
               ti++
               i++
               ret[ri] = wrap_addx(i)
             } while (ri < tn - 1 && i < addxl - 1)
+            if (
+              with_da &&
+              i === addxl - 1 &&
+              id < ld &&
+              dels[id][0] === addi + 1
+            )
+              das[ri] = true
             bi = bstart - 1
             if (ri === tn - 1) return make_ret()
             else {
@@ -193,6 +204,8 @@ export function Bridge(bottom_size, adds, dels) {
               ri++
               ret[ri] = bi - bstart
             }
+            if (with_da && tend <= addi - bi + ti - ndel && ndel && ri >= 0)
+              das[ri] = true
             return make_ret()
           } else {
             while (bi < addi - ndel) {
@@ -201,6 +214,7 @@ export function Bridge(bottom_size, adds, dels) {
               ri++
               ret[ri] = bi - bstart
             }
+            if (with_da && ndel && ri >= 0) das[ri] = true
             bi += ndel
             let i = -1
             while (ri < tn - 1 && i < addxl - 1) {
@@ -209,6 +223,13 @@ export function Bridge(bottom_size, adds, dels) {
               ti++
               ret[ri] = wrap_addx(i)
             }
+            if (
+              with_da &&
+              i === addxl - 1 &&
+              id < ld &&
+              dels[id][0] === addi + 1
+            )
+              das[ri] = true
             if (ri === tn - 1) {
               return make_ret()
             }
