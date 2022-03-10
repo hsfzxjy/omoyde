@@ -94,10 +94,16 @@ export function Bridge(bottom_size, adds, dels) {
     size() {
       return size
     },
+    has_del_at_front() {
+      return adds[0][0] !== -1 && dels.length > 1 && dels[1][0] === 0
+    },
     range_t2b(tstart, tend, with_handle = false, with_da = false) {
       if (tstart < 0) tstart = 0
       if (tend >= size) tend = size - 1
-      if (tstart > tend) return [tstart, tend, []]
+      if (tstart > tend) {
+        const ret = [tstart, tend, []]
+        return with_da ? [ret, []] : []
+      }
 
       function make_ret() {
         let i = ret.length - 1
@@ -333,15 +339,19 @@ export class OverlayDS {
       limit: bend - bstart + 1,
       includes: true,
     })
-    return range.map((x, idx) => {
+    const ret = range.map((x, idx) => {
       const isAdded = typeof x !== "number"
       const item = isAdded ? patch(x, { id: Symbol() }) : items[x]
       patch(item, {
         isAdded,
+        delBefore: false,
         delAfter: !!das[idx],
       })
       return item
     })
+    if (ret.length && tstart <= 0 && this._bridge.has_del_at_front())
+      ret[0].delBefore = true
+    return ret
   }
   collect() {
     const { adds, dels } = this._bridge._internal()
