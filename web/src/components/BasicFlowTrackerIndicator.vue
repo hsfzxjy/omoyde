@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from "vue"
+import { dto2Date } from "../services/media/misc"
 
 const props = defineProps({ item: Object })
 const text = computed(getText)
@@ -7,7 +8,7 @@ const text = computed(getText)
 function getText() {
   const item = props.item
   if (item === null) return "Loading..."
-  const lines = [new Date(item.dt).toLocaleString()]
+  const lines = [dto2Date([item.dt, item.offset]).toLocaleString()]
   const { text, type } = item
   if (type === "m") {
     lines.push(`<b>${text}</b>`)
