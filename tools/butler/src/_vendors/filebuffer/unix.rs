@@ -20,7 +20,7 @@ pub struct PlatformData;
 
 pub fn map_file(file: fs::File) -> io::Result<(*const u8, usize, PlatformData)> {
     let fd = file.as_raw_fd();
-    let length = try!(file.metadata()).len();
+    let length = file.metadata()?.len();
 
     if length > usize::max_value() as u64 {
         return Err(io::Error::new(io::ErrorKind::Other, "file is larger than address space"));
@@ -32,7 +32,7 @@ pub fn map_file(file: fs::File) -> io::Result<(*const u8, usize, PlatformData)> 
     }
 
     let result = unsafe {
-        libc::mmap(ptr::null_mut(), length as usize, libc::PROT_READ, libc::MAP_PRIVATE, fd, 0)
+        libc::mmap(ptr::null_mut(), length as usize, libc::PROT_READ, libc::MAP_PRIVATE | libc::MAP_POPULATE | libc::MAP_NONBLOCK, fd, 0)
     };
 
     if result == libc::MAP_FAILED {
