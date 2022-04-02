@@ -1,12 +1,14 @@
 #![feature(once_cell)]
+#![feature(try_blocks)]
+#![feature(test)]
 
 #[macro_use]
 extern crate anyhow;
 #[macro_use]
 extern crate lazy_static;
-extern crate fasthash;
 extern crate num_cpus;
 
+mod _vendors;
 mod cmd;
 mod db;
 mod generator;
@@ -33,10 +35,10 @@ fn goto_work_directory() -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    rayon::ThreadPoolBuilder::new()
-        .num_threads(num_cpus::get() * 2) // butler's job is light-weight enough, we thus double the thread pool capacity
-        .build_global()
-        .unwrap();
+    // rayon::ThreadPoolBuilder::new()
+    //     .num_threads(1) // butler's job is light-weight enough, we thus double the thread pool capacity
+    //     .build_global()
+    //     .unwrap();
     goto_work_directory()?;
     db::initialize_mountpoint_table()?;
     cmd::handle_cli()?;

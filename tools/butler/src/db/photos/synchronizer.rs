@@ -7,6 +7,7 @@ pub trait Stub {
     fn has_changed(&self) -> bool;
 }
 
+#[derive(Debug)]
 pub struct DBStub {
     pub pid: PID,
     pub file_hash: FileHash,
@@ -23,23 +24,33 @@ impl Stub for DBStub {
 pub trait SyncerQuery {
     type Stub: Stub;
 
+    fn need_stage2(&self, stub: Option<&Self::Stub>) -> bool;
+    fn prefetch_stage2(&mut self) -> Result<()>;
     fn run_stage2(&mut self, stub: Option<Self::Stub>) -> Result<Option<Self::Stub>>;
 }
 
 impl SyncerQuery for LocalPhotoEntry {
     type Stub = DBStub;
-    fn run_stage2(&mut self, mut stub: Option<DBStub>) -> Result<Option<DBStub>> {
-        let should_hash = stub
-            .as_ref()
+    fn need_stage2(&self, stub: Option<&DBStub>) -> bool {
+        stub.as_ref()
             .map(|stub| stub.local_has_changed)
-            .unwrap_or(true);
-        if should_hash {
+            .unwrap_or(true)
+    }
+
+    fn prefetch_stage2(&mut self) -> Result<()> {
+        self.prefetch()
+    }
+
+    fn run_stage2(&mut self, mut stub: Option<DBStub>) -> Result<Option<DBStub>> {
+        if self.need_stage2(stub.as_ref()) {
             self.fill_file_hash()?;
             stub.as_mut().map(|stub| {
                 if stub.file_hash == self.file_hash.unwrap() {
                     stub.local_has_changed = false
                 }
             });
+        } else {
+            self.file_hash.replace(stub.as_ref().unwrap().file_hash);
         }
         Ok(stub)
     }
@@ -188,6 +199,17 @@ pub trait Syncer: Sized {
             .map(|stub| self.replace_stub(stub));
         self
     }
+    fn need_stage2(&self) -> bool {
+        self.get_query().need_stage2(self.get_stub())
+    }
+    fn prefetch_stage2(&mut self) -> Result<()> {
+        let stub = self.get_stub();
+        if self.get_query().need_stage2(stub) {
+            self.get_query_mut().prefetch_stage2().and(Ok(()))
+        } else {
+            Ok(())
+        }
+    }
     fn run_stage2(mut self) -> Result<Self> {
         let stub = self.take_stub();
         let new_stub = self.get_query_mut().run_stage2(stub)?;
@@ -234,6 +256,8 @@ pub struct LocalSyncer {
     pub stage: Stage,
     pub stub: Option<DBStub>,
 }
+
+unsafe impl Sync for LocalSyncer {}
 
 impl LocalSyncer {
     pub fn new(local_entry: Arc<LocalPhotoEntry>) -> Self {

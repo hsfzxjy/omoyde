@@ -3,11 +3,15 @@ use crate::prelude::*;
 use super::misc::*;
 use crate::db::locations::*;
 
+use crate::_vendors::filebuffer;
+use xxhash_rust::xxh3::xxh3_64;
+
 #[derive(Debug)]
 pub struct LocalPhotoEntry {
     pub location: Arc<FileLocation>,
     pub file_hash: Option<FileHash>,
     pub metadata: PhotoMetadata,
+    mmap: Option<filebuffer::FileBuffer>,
 }
 
 impl LocalPhotoEntry {
@@ -17,21 +21,26 @@ impl LocalPhotoEntry {
             location: location.into(),
             metadata,
             file_hash: None,
+            mmap: None,
         })
     }
     fn filepath(&self) -> &Path {
         self.location.filepath()
     }
+    pub fn prefetch(&mut self) -> Result<()> {
+        let mmap = filebuffer::FileBuffer::open(self.filepath())?;
+        mmap.prefetch(0, mmap.len());
+        self.mmap.replace(mmap);
+        Ok(())
+    }
     pub fn fill_file_hash(&mut self) -> Result<()> {
-        println!("Hashing {}...", self.filepath().display());
         if self.file_hash.is_some() {
             return Ok(());
         }
-        let mut reader = BufReader::new(File::open(self.filepath())?);
-        let mut hasher = fasthash::xx::Hasher64::new();
-        hasher.write_stream(&mut reader)?;
-        let hash_val = hasher.finish();
-        self.file_hash = Some(hash_val);
+        println!("Hashing {}...", self.filepath().display());
+        let mmap = self.mmap.take().unwrap();
+        let buf = mmap.as_ref();
+        self.file_hash = Some(xxh3_64(buf));
         Ok(())
     }
 }

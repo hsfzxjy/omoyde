@@ -3,7 +3,6 @@ pub use anyhow::{Context, Error, Result};
 pub use bincode;
 pub use chrono::prelude::*;
 pub use exif;
-pub use fasthash::{FastHasher, StreamHasher};
 pub use serde;
 pub use serde::ser::{SerializeMap, SerializeSeq};
 pub use serde::{Deserialize, Serialize};

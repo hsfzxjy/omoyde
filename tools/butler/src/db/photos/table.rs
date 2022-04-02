@@ -172,28 +172,48 @@ impl PhotoTable {
         Ok(*pid)
     }
 
-    fn merge_from_local(
-        &mut self,
-        local_entries: impl IntoIterator<Item = Arc<LocalPhotoEntry>>,
-    ) -> Result<()> {
-        use rayon::prelude::*;
+    fn merge_from_local<I, I2>(&mut self, local_entries: I) -> Result<()>
+    where
+        I: IntoIterator<Item = I2> + Send,
+        I2: IntoIterator<Item = Result<Arc<LocalPhotoEntry>>> + Send,
+    {
+        use std::ops::BitOr;
+        use std::sync::mpsc::sync_channel;
+        use std::thread;
+
         let existing_pids = local_entries
             .into_iter()
-            .map(|entry| LocalSyncer::new(entry).run_stage1(self))
-            .collect::<Vec<_>>()
-            .into_par_iter()
-            .map(|syncer| syncer.run_stage2())
+            .map(|entries| -> Result<_> {
+                let (sx, rx) = sync_channel::<LocalSyncer>(2);
+
+                let handle = thread::spawn(move || {
+                    rx.into_iter()
+                        .map(|syncer| syncer.run_stage2())
+                        .collect::<Result<Vec<_>>>()
+                });
+
+                entries
+                    .into_iter()
+                    .map(|entry| -> Result<()> {
+                        let mut syncer = LocalSyncer::new(entry?).run_stage1(self);
+                        syncer.prefetch_stage2()?;
+                        sx.send(syncer)?;
+                        Ok(())
+                    })
+                    .collect::<Result<_>>()?;
+
+                drop(sx);
+
+                handle
+                    .join()
+                    .map_err(|_| anyhow!("fail to join thread"))??
+                    .into_iter()
+                    .map(|syncer| syncer.run_finish(self))
+                    .collect::<Result<HashSet<_>>>()
+            })
             .collect::<Result<Vec<_>>>()?
             .into_iter()
-            .enumerate()
-            .map(|(idx, syncer)| {
-                if idx % 50 == 0 {
-                    println!("{} photos processed", idx);
-                }
-                syncer
-            })
-            .map(|syncer| syncer.run_finish(self))
-            .collect::<Result<HashSet<_>>>()?;
+            .fold(HashSet::<u32>::new(), |x, y| x.bitor(&y));
 
         self.pid2entry.retain(|pid, entry| {
             if existing_pids.contains(pid) {

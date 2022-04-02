@@ -16,36 +16,37 @@ pub fn finalize_mountpoint_table() -> Result<()> {
     Ok(())
 }
 
-pub fn scan_photos() -> Result<impl IntoIterator<Item = Arc<LocalPhotoEntry>>> {
-    use rayon::prelude::*;
+pub fn scan_photos(
+) -> Result<impl IntoIterator<Item = impl IntoIterator<Item = Result<Arc<LocalPhotoEntry>>>>> {
+    use std::os::unix::fs::DirEntryExt;
+
     let mpt = MOUNTPOINT_TABLE.lock().unwrap();
 
     let entries = mpt
         .path2entry
         .iter()
         .map(|(path, mp)| -> Result<_> {
-            let loc = Arc::new(DirectoryLocation::from(mp));
+            let loc = DirectoryLocation::from(mp);
             let ret = path.read_dir()?;
             Ok((loc, ret))
         })
         .collect::<Result<Vec<_>>>()?
         .into_iter()
-        .flat_map(|(loc, read_dir)| {
-            read_dir.map(move |file| -> Result<_> { Ok((loc.clone(), file?)) })
-        })
-        .collect::<Result<Vec<_>>>()?
-        .into_par_iter()
-        .map(|(loc, file)| -> Result<_> {
-            if file.file_type()?.is_file() && util::fs::is_supported_image(&file.path()) {
-                let loc = loc.with_filename(file.file_name());
-                let entry = LocalPhotoEntry::new(loc)?;
-                Ok(Some(Arc::new(entry)))
-            } else {
-                Ok(None)
-            }
-        })
-        .filter_map(Result::transpose)
-        .collect::<Result<Vec<_>>>()?;
+        .map(|(loc, read_dir)| {
+            let mut res = read_dir
+                .filter_map(Result::ok)
+                .filter(|file| file.file_type().map_or(false, |t| t.is_file()))
+                .filter(|file| util::fs::is_supported_image(&file.path()))
+                .map(move |file| -> Result<_> {
+                    let loc = loc.with_filename(file.file_name());
+                    let entry = LocalPhotoEntry::new(loc)?;
+                    Ok((file.ino(), Arc::new(entry)))
+                })
+                .filter_map(Result::ok)
+                .collect::<Vec<_>>();
+            res.sort_by(|a, b| a.0.cmp(&b.0));
+            res.into_iter().map(|(_, entry)| Ok(entry))
+        });
 
     println!("Scanned {} local entries.", entries.len());
     Ok(entries)

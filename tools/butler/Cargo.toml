@@ -13,7 +13,6 @@ bincode = "1.2.1"
 byteorder = "1.4.3"
 chrono = {version = "0.4.19", features = ["serde"]}
 clap = {version = "3.0.10", features = ["derive"]}
-fasthash = "0.4.0"
 image = "0.23.14"
 kamadak-exif = "0.5.4"
 lazy_static = "1.4.0"
@@ -21,3 +20,7 @@ num_cpus = "1.13.1"
 rayon = "1.5.1"
 serde = {version = "1.0", features = ["derive", "rc"]}
 uuid = {version = "0.8.2", features = ["v4", "serde"]}
+xxhash-rust = {version = "0.8.4", features = ["xxh3"]}
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2.6"
