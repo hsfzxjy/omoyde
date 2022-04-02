@@ -5,7 +5,7 @@ use widget_core;
 pub struct FFIVec {
     len: usize,
     data: *const u8,
-    storage: *const Vec<u8>,
+    storage: *mut Vec<u8>,
 }
 
 impl FFIVec {
@@ -28,7 +28,11 @@ impl FFIVec {
 #[no_mangle]
 pub extern "C" fn free_ffi_vec(v: *mut FFIVec) {
     if v != 0 as *mut FFIVec {
-        unsafe { drop(Box::from_raw(v)) }
+        unsafe {
+            let v = Box::from_raw(v);
+            drop(Box::from_raw(v.storage));
+            drop(v)
+        }
     }
 }
 
