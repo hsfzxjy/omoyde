@@ -223,3 +223,132 @@ pub mod math {
         Ok(())
     }
 }
+
+pub mod sync {
+    use serde::de::Deserialize;
+    use serde::ser::Serialize;
+    use std::fmt;
+    use std::sync::atomic::{AtomicU32, Ordering};
+
+    #[derive(Debug)]
+    pub struct AtomicCounter(AtomicU32);
+
+    impl AtomicCounter {
+        pub fn new(v: u32) -> Self {
+            Self(AtomicU32::new(v))
+        }
+
+        #[inline(always)]
+        pub fn get_and_incr(&self) -> u32 {
+            self.0.fetch_add(1, Ordering::Relaxed)
+        }
+
+        #[inline(always)]
+        pub fn get(&self) -> u32 {
+            self.0.load(Ordering::Relaxed)
+        }
+    }
+
+    struct AtomicCounterVisitor;
+    impl<'de> serde::de::Visitor<'de> for AtomicCounterVisitor {
+        type Value = AtomicCounter;
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("counter")
+        }
+        fn visit_u32<E>(self, v: u32) -> Result<Self::Value, E> {
+            Ok(Self::Value::new(v))
+        }
+    }
+
+    impl Serialize for AtomicCounter {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            serializer.serialize_u32(self.get())
+        }
+    }
+
+    impl<'de> Deserialize<'de> for AtomicCounter {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            deserializer.deserialize_u32(AtomicCounterVisitor)
+        }
+    }
+}
+
+#[macro_use]
+pub mod functional {
+    use paste::paste;
+    use std::collections::HashSet;
+
+    pub trait Accumulable {
+        fn init() -> Self;
+        fn accum(x: Self, y: Self) -> Self;
+    }
+
+    impl<T: Eq + std::hash::Hash + Clone> Accumulable for HashSet<T> {
+        fn init() -> Self {
+            HashSet::new()
+        }
+        fn accum(x: Self, y: Self) -> Self {
+            use std::ops::BitOr;
+            x.bitor(&y)
+        }
+    }
+
+    impl<T> Accumulable for Vec<T> {
+        fn init() -> Self {
+            vec![]
+        }
+        fn accum(mut x: Self, mut y: Self) -> Self {
+            x.append(&mut y);
+            x
+        }
+    }
+
+    macro_rules! tuple_impl {
+        ( $($T: ident),+ ) => {
+            #[allow(non_snake_case)]
+            impl< $( $T, )+ > Accumulable for ( $( $T, )+ ) where
+            $( $T: Accumulable, )+ {
+                fn init() -> Self {
+                    ($(
+                        <$T as Accumulable>::init(),
+                    )+)
+                }
+                fn accum(x: Self, y: Self) -> Self {
+                    let ( $(paste!{[<x $T>]},)+ ) = x;
+                    let ( $(paste!{[<y $T>]},)+ ) = y;
+                    ($(
+                        Accumulable::accum(paste!{[<x $T>]}, paste!{[<y $T>]}),
+                    )+)
+                }
+            }
+        };
+    }
+
+    tuple_impl!(A);
+    tuple_impl!(A, B);
+    tuple_impl!(A, B, C);
+
+    pub trait FoldInto {
+        type Target;
+
+        fn fold_into(self) -> Self::Target;
+    }
+
+    impl<I, T> FoldInto for I
+    where
+        I: Iterator<Item = T>,
+        T: Accumulable,
+    {
+        type Target = T;
+
+        fn fold_into(self) -> T {
+            self.fold(<T as Accumulable>::init(), <T as Accumulable>::accum)
+        }
+    }
+}

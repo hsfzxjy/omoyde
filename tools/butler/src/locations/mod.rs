@@ -1,29 +1,23 @@
+use std::hash::{Hash, Hasher};
 use std::lazy::SyncOnceCell;
 
-use std::hash::{Hash, Hasher};
-
 use crate::prelude::*;
-
-use crate::db::mounts::*;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone, PartialOrd, Ord)]
 pub struct CanonicalizedPath(Arc<Path>);
 
 impl CanonicalizedPath {
-    pub fn new<P: AsRef<Path>>(path: P) -> Result<Self> {
-        Ok(Self(path.as_ref().canonicalize()?.into()))
-    }
-    fn new_unchecked<P: AsRef<Path>>(path: P) -> Self {
-        Self(path.as_ref().into())
+    pub fn new<P: AsRef<Path>>(path: P) -> Self {
+        Self(path.as_ref().canonicalize().unwrap().into())
     }
 }
 
 pub trait Canonicalize {
-    fn resolve(self) -> Result<CanonicalizedPath>;
+    fn resolve(self) -> CanonicalizedPath;
 }
 
 impl<P: AsRef<Path>> Canonicalize for P {
-    fn resolve(self) -> Result<CanonicalizedPath> {
+    fn resolve(self) -> CanonicalizedPath {
         CanonicalizedPath::new(self)
     }
 }
@@ -43,28 +37,20 @@ pub struct DirectoryLocation {
 
 impl DirectoryLocation {
     pub fn from_mpid(mpid: Uuid) -> Option<Self> {
-        MOUNTPOINT_TABLE
-            .lock()
-            .unwrap()
-            .get_by_mpid(mpid)
-            .map(Self::from)
+        mpt_access().query(mpid).map(Self::from)
     }
 
     pub fn from_path(path: &CanonicalizedPath) -> Option<Self> {
-        MOUNTPOINT_TABLE
-            .lock()
-            .unwrap()
-            .get_by_path(path)
-            .map(Self::from)
+        mpt_access().query(path.clone()).map(Self::from)
     }
     fn from_path_unchecked<P: AsRef<Path>>(path: P) -> Option<Self> {
-        let path = CanonicalizedPath::new_unchecked(path);
+        let path = CanonicalizedPath(path.as_ref().into());
         Self::from_path(&path)
     }
 }
 
-impl From<&MountPointEntry> for DirectoryLocation {
-    fn from(mp: &MountPointEntry) -> Self {
+impl From<&MountPointRecord> for DirectoryLocation {
+    fn from(mp: &MountPointRecord) -> Self {
         Self {
             mpid: mp.uuid,
             path: mp.path.clone(),

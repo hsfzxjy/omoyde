@@ -1,10 +1,14 @@
-mod entries;
+mod access;
+mod records;
+mod index;
+mod keys;
 mod misc;
-mod ops;
-mod synchronizer;
+mod patch;
 mod table;
 
-pub use self::entries::*;
+pub use self::access::*;
+pub use self::records::*;
+pub use self::keys::*;
 pub use self::misc::*;
-pub use self::ops::*;
+pub use self::patch::*;
 pub use self::table::*;

@@ -1,7 +1,7 @@
-mod locations;
+mod helpers;
 mod mounts;
 mod photos;
 
-pub use locations::*;
+pub use helpers::*;
 pub use mounts::*;
 pub use photos::*;

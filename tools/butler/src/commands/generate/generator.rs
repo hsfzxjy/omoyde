@@ -65,7 +65,7 @@ pub struct CompressedMeta {
 }
 
 pub fn write_bins<P: AsRef<Path>>(mut metas: Vec<CompressedMeta>, path: P) -> Result<()> {
-    metas.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+    metas.sort_by_cached_key(|x| x.timestamp);
     use byteorder::{BigEndian, WriteBytesExt};
     let mut writer = BufWriter::new(File::create(path)?);
     for meta in metas {
@@ -79,7 +79,7 @@ pub fn write_bins<P: AsRef<Path>>(mut metas: Vec<CompressedMeta>, path: P) -> Re
 
 impl PhotoGenerator {
     pub fn new<P: AsRef<Path>>(
-        entry: &mut db::DBPhotoEntry,
+        entry: &db::PhotoRecord,
         dst_dir: P,
         force: bool,
         quality: u8,
@@ -141,7 +141,7 @@ impl PhotoGenerator {
         if self.image.is_none() {
             let img = ImageReader::open(&self.source_path)?.decode()?;
             let img = self.rotate_image(img);
-            self.image = Some(img);
+            self.image.replace(img);
         }
         Ok(self.image.as_ref().unwrap())
     }

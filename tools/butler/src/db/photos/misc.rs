@@ -4,7 +4,7 @@ use crate::util;
 pub type FileHash = u64;
 pub type PID = u32;
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub enum PhotoOrientation {
     D0,
     D90,
@@ -25,7 +25,7 @@ impl From<u32> for PhotoOrientation {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct PhotoMetadata {
     // fields for checking modification
     pub ctime: DateTime<Utc>,
@@ -39,6 +39,13 @@ pub struct PhotoMetadata {
 }
 
 impl PhotoMetadata {
+    pub fn fix_from(&mut self, other: &Self) {
+        if self.etime.is_some() {
+            println!("already fixed");
+            return;
+        }
+        self.etime = other.etime;
+    }
     pub fn from_path<P: AsRef<Path>>(path: P) -> Result<Self> {
         use util::exif::{read_datetime, read_dims, read_orientation};
 
@@ -75,10 +82,32 @@ impl PhotoMetadata {
 }
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
-pub enum PhotoEntryStatus {
+pub enum PhotoRecordStatus {
     Committed,
     CommittedButMissing,
     CommittedButModified,
     Uncommitted,
 }
 
+pub use PhotoRecordStatus::*;
+
+impl PhotoRecordStatus {
+    pub fn handle_dirty_mark(&mut self, dirty: bool) {
+        let old = self.clone();
+        let new = match (old, dirty) {
+            (Uncommitted, _) => Uncommitted,
+            (Committed, true) => CommittedButModified,
+            (Committed, false) => Committed,
+            (CommittedButModified, _) => CommittedButModified,
+            (CommittedButMissing, true) => CommittedButModified,
+            (CommittedButMissing, false) => Committed,
+        };
+        *self = new;
+    }
+    pub fn handle_local_missing(&mut self) {
+        *self = match self {
+            Uncommitted => return,
+            _ => CommittedButMissing,
+        };
+    }
+}

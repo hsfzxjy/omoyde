@@ -1,6 +1,4 @@
 #![feature(once_cell)]
-#![feature(try_blocks)]
-#![feature(test)]
 
 #[macro_use]
 extern crate anyhow;
@@ -9,9 +7,10 @@ extern crate lazy_static;
 extern crate num_cpus;
 
 mod _vendors;
-mod cmd;
+mod commands;
+mod consts;
 mod db;
-mod generator;
+mod locations;
 mod prelude;
 mod util;
 
@@ -35,13 +34,8 @@ fn goto_work_directory() -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    // rayon::ThreadPoolBuilder::new()
-    //     .num_threads(1) // butler's job is light-weight enough, we thus double the thread pool capacity
-    //     .build_global()
-    //     .unwrap();
     goto_work_directory()?;
-    db::initialize_mountpoint_table()?;
-    cmd::handle_cli()?;
-    db::finalize_mountpoint_table()?;
-    Ok(())
+    mpt_access_mut().initialize(DEFAULT_MOUNTPOINTS_DB_PATH)?;
+    commands::handle_cli()?;
+    mpt_access().finalize(DEFAULT_MOUNTPOINTS_DB_PATH)
 }

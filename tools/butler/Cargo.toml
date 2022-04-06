@@ -17,8 +17,10 @@ image = "0.23.14"
 kamadak-exif = "0.5.4"
 lazy_static = "1.4.0"
 num_cpus = "1.13.1"
+paste = "1.0.7"
 rayon = "1.5.1"
 serde = {version = "1.0", features = ["derive", "rc"]}
+unwrap_or = "1.0.0"
 uuid = {version = "0.8.2", features = ["v4", "serde"]}
 xxhash-rust = {version = "0.8.4", features = ["xxh3"]}
 
