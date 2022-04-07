@@ -28,7 +28,10 @@ impl<'b, 'a: 'b, T: Table> TableEntry<'b, 'a, T> {
     }
     pub fn remove(self) -> Option<<T as Table>::Record> {
         let ptr = unsafe { self.ptr.as_mut() };
-        self.handle.into_occupied().map(|x| ptr.remove(x))
+        self.handle.into_occupied().map(|x| {
+            ptr.modified_flag().set();
+            ptr.remove(x)
+        })
     }
 }
 
@@ -36,7 +39,7 @@ impl<'b, 'a: 'b, T: Table> TableEntry<'b, 'a, T>
 where
     Self: TableEntryTrait<'b, 'a, T>,
 {
-    pub fn or_insert_with< F>(self, f: F) -> Patch<'b, 'a, T>
+    pub fn or_insert_with<F>(self, f: F) -> Patch<'b, 'a, T>
     where
         F: FnOnce() -> <T as Table>::Record,
     {
@@ -46,7 +49,8 @@ where
         };
         let rec = f();
         let rec = unsafe { this.ptr.as_mut() }.insert(rec);
-        <Patch<'b, 'a, T,>>::new(rec, this.ptr)
+        unsafe { this.ptr.as_mut() }.modified_flag().set();
+        <Patch<'b, 'a, T>>::new(rec, this.ptr)
     }
     pub fn modify(self) -> std::result::Result<Patch<'b, 'a, T>, Self> {
         match self.handle.0 {

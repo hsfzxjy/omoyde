@@ -12,6 +12,12 @@ impl CanonicalizedPath {
     }
 }
 
+impl fmt::Display for CanonicalizedPath {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0.display())
+    }
+}
+
 pub trait Canonicalize {
     fn resolve(self) -> CanonicalizedPath;
 }

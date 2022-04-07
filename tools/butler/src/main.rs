@@ -1,5 +1,8 @@
 #![feature(once_cell)]
 
+#[allow(unused_imports)]
+#[macro_use]
+extern crate log;
 #[macro_use]
 extern crate anyhow;
 #[macro_use]

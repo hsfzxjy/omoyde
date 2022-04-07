@@ -9,20 +9,25 @@ version = "0.1.0"
 anyhow = "1.0.52"
 atomic_refcell = "0.1.8"
 atomicwrites = "0.3.1"
+atty = "0.2.14"
 bincode = "1.2.1"
 byteorder = "1.4.3"
 chrono = {version = "0.4.19", features = ["serde"]}
-clap = {version = "3.0.10", features = ["derive"]}
+clap = {version = "3.1.8", features = ["derive"]}
 image = "0.23.14"
 kamadak-exif = "0.5.4"
 lazy_static = "1.4.0"
+log = "0.4.16"
 num_cpus = "1.13.1"
 paste = "1.0.7"
 rayon = "1.5.1"
 serde = {version = "1.0", features = ["derive", "rc"]}
+simplelog = "0.11.2"
+tabled = {version = "0.6.0", features = ["color"]}
 unwrap_or = "1.0.0"
 uuid = {version = "0.8.2", features = ["v4", "serde"]}
 xxhash-rust = {version = "0.8.4", features = ["xxh3"]}
+yansi = "0.5.1"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2.6"

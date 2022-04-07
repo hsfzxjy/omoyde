@@ -28,8 +28,13 @@ pub use std::str::from_utf8;
 pub use std::str::FromStr;
 pub use std::sync::{Arc, Mutex};
 pub use std::time::SystemTime;
+pub use tabled::Table as PrettyTable;
 pub use unwrap_or::*;
 pub use uuid::Uuid;
 
 pub type Either<T, E> = std::result::Result<T, E>;
 pub type StdResult<T, E> = Either<T, E>;
+
+pub mod yansi {
+    pub use yansi::{Color, Paint, Style};
+}

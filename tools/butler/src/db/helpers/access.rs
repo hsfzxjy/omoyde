@@ -21,7 +21,7 @@ where
     }
 
     pub fn records(&'b self) -> Values<'a, <T as Table>::PrimaryKey, <T as Table>::Record> {
-        unsafe { self.0.as_mut() }.treemap().values()
+        unsafe { self.0.as_mut() }.treemap_mut().values()
     }
 }
 
@@ -31,12 +31,6 @@ where
 {
     pub fn finalize<P: AsRef<Path>>(&'b self, p: P) -> Result<()> {
         unsafe { self.0.as_mut() }.save_to_path(p)
-    }
-}
-
-impl<'a, T: fmt::Display> std::fmt::Display for TableAccess<'a, T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(unsafe { self.0.as_mut() }, f)
     }
 }
 
@@ -62,6 +56,19 @@ impl<'a, T> TableAccessExt<'a, T> for &'a T {
     }
 }
 
+impl<'b, 'a: 'b, T> TableAccessMut<'a, T>
+where
+    T: Table + serde::de::DeserializeOwned + Serialize,
+{
+    pub fn initialize<P: AsRef<Path>>(&'b self, p: P) -> Result<()> {
+        let table = unsafe { self.0.as_mut() };
+        table.load_from_path(p)?;
+        let treemap = unsafe { self.0.as_mut() }.treemap_mut();
+        table.index_mut().build(treemap);
+        Ok(())
+    }
+}
+
 pub struct TableAccessMut<'a, T>(pub(in crate::db) TableRef<'a, T, &'a mut T>);
 
 impl<'b, 'a: 'b, T, K: 'a> TableAccessMut<'a, T>
@@ -76,7 +83,7 @@ where
         F: FnMut(&K, &mut P) -> bool,
     {
         let mut to_remove = HashSet::new();
-        let map = unsafe { self.0.as_mut() }.treemap();
+        let map = unsafe { self.0.as_mut() }.treemap_mut();
         for (key, value) in map.iter_mut() {
             let mut patch = Patch::<'_, '_, T>::new(value, &self.0);
             if !f(&key, &mut patch) {
@@ -84,16 +91,23 @@ where
             }
             patch.commit();
         }
-        let table = unsafe { self.0.as_mut() };
-        let map = unsafe { self.0.as_mut() }.treemap();
+
+        if to_remove.is_empty() {
+            return;
+        }
+
+        let table_index = unsafe { self.0.as_mut() }.index_mut();
+        let map = unsafe { self.0.as_mut() }.treemap_mut();
         map.retain(|k, rec| {
             if to_remove.contains(k) {
-                table.remove_index(rec);
+                table_index.remove(rec);
                 false
             } else {
                 true
             }
-        })
+        });
+
+        unsafe { self.0.as_mut() }.modified_flag().set();
     }
 }
 
@@ -107,29 +121,10 @@ where
     {
         TableEntry::with_key(k, &self.0)
     }
-    pub fn insert(&'b mut self, rec: <T as Table>::Record) {
-        <T as Table>::insert(unsafe { self.0.as_mut() }, rec);
-    }
-    pub fn insert_and_view(&'b mut self, rec: <T as Table>::Record) -> &'b <T as Table>::Record {
-        <T as Table>::insert(unsafe { self.0.as_mut() }, rec)
-    }
-}
-
-impl<'b, 'a: 'b, T> TableAccess<'a, T>
-where
-    T: Table + serde::de::DeserializeOwned + Serialize,
-{
-    pub fn initialize<P: AsRef<Path>>(&'b self, p: P) -> Result<()> {
+    pub fn insert(&'b mut self, rec: <T as Table>::Record) -> &'b <T as Table>::Record {
         let table = unsafe { self.0.as_mut() };
-        table.load_from_path(p)?;
-        table.after_init();
-        Ok(())
-    }
-}
-
-impl<'a, T: fmt::Display> fmt::Display for TableAccessMut<'a, T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(unsafe { self.0.as_mut() }, f)
+        table.modified_flag().set();
+        table.insert(rec)
     }
 }
 

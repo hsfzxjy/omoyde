@@ -25,19 +25,25 @@ impl PhotoTableIndex {
     }
 }
 
-impl PhotoTableIndex {
-    pub(super) fn build_for(&mut self, rec: &PhotoRecord) {
+impl TableIndex for PhotoTableIndex {
+    type Table = PhotoTable;
+
+    fn insert(&mut self, rec: &PhotoRecord) {
         let pid = rec.pid;
         self.loc2pid.insert(rec.location.clone(), pid);
         self.curate_selected(rec, rec.selected);
         self.status2pids.entry(rec.status).or_default().insert(pid);
     }
-    pub(super) fn drop_for(&mut self, rec: &PhotoRecord) {
+
+    fn remove(&mut self, rec: &PhotoRecord) {
         let pid = rec.pid;
         self.loc2pid.remove(&rec.location);
         self.curate_selected(rec, false);
         self.status2pids.entry(rec.status).or_default().remove(&pid);
     }
+}
+
+impl PhotoTableIndex {
     pub(super) fn mutate_status(
         &mut self,
         pid: PID,
@@ -51,6 +57,7 @@ impl PhotoTableIndex {
         self.curate_selected(rec, rec.selected);
     }
 }
+
 impl PhotoTableIndex {
     pub(super) fn count_status(&mut self, status: PhotoRecordStatus) -> usize {
         self.status2pids.entry(status).or_default().len()

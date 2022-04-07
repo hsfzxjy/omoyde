@@ -1,18 +1,33 @@
-use super::handle::TableHandle;
-use super::Occupied;
+use crate::util::sync::AtomicFlag;
+
+use super::{Occupied, TableHandle, TableIndex};
 use std::collections::btree_map::BTreeMap;
 use std::marker::PhantomData;
 use std::ops::Deref;
 
-pub trait Table {
-    type PrimaryKey: Ord;
-    type Record;
+pub trait TableRecord {
+    type Table: Table;
+    fn primary_key(&self) -> &<Self::Table as Table>::PrimaryKey;
+}
 
-    fn insert(&mut self, rec: Self::Record) -> &mut Self::Record;
-    fn remove(&mut self, slot: Occupied<'_, Self>) -> Self::Record;
-    fn remove_index(&mut self, rec: &Self::Record);
-    fn treemap(&mut self) -> &mut BTreeMap<Self::PrimaryKey, Self::Record>;
-    fn after_init(&mut self);
+pub trait Table {
+    type PrimaryKey: Ord + Clone;
+    type Record: TableRecord<Table = Self>;
+    type Index: TableIndex<Table = Self>;
+
+    fn insert(&mut self, rec: Self::Record) -> &mut Self::Record {
+        self.index_mut().insert(&rec);
+        self.treemap_mut()
+            .entry(rec.primary_key().clone())
+            .or_insert(rec)
+    }
+    fn remove(&mut self, slot: Occupied<'_, Self>) -> Self::Record {
+        self.index_mut().remove(slot.get());
+        slot.remove()
+    }
+    fn treemap_mut(&mut self) -> &mut BTreeMap<Self::PrimaryKey, Self::Record>;
+    fn index_mut(&mut self) -> &mut Self::Index;
+    fn modified_flag(&self) -> &AtomicFlag;
 }
 
 pub trait TableKey<T: Table> {

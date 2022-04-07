@@ -28,7 +28,9 @@ impl LocalPhoto {
     }
     pub fn prefetch(&mut self) -> Result<()> {
         let mmap = filebuffer::FileBuffer::open(self.filepath())?;
-        mmap.prefetch(0, mmap.len());
+        if mmap.len() > 0 {
+            mmap.prefetch(0, mmap.len());
+        }
         self.mmap.replace(mmap);
         Ok(())
     }
@@ -36,10 +38,14 @@ impl LocalPhoto {
         if self.file_hash.is_some() {
             return Ok(());
         }
-        println!("Hashing {}...", self.filepath().display());
+        info!("Hashing {}...", self.filepath().display());
         let mmap = self.mmap.take().unwrap();
-        let buf = mmap.as_ref();
-        self.file_hash = Some(xxh3_64(buf));
+        self.file_hash = if mmap.len() == 0 {
+            Some(0)
+        } else {
+            let buf = mmap.as_ref();
+            Some(xxh3_64(buf))
+        };
         Ok(())
     }
 }
@@ -57,6 +63,14 @@ pub struct PhotoRecord {
     pub selected: bool,
     pub status: PhotoRecordStatus,
     pub commit_time: Option<DateTime<Utc>>,
+}
+
+impl TableRecord for PhotoRecord {
+    type Table = PhotoTable;
+
+    fn primary_key(&self) -> &PID {
+        &self.pid
+    }
 }
 
 impl PhotoRecord {

@@ -18,6 +18,7 @@ pub mod fs {
 }
 
 pub mod serde {
+
     use crate::prelude::*;
 
     pub trait TableIO<'a> {
@@ -25,7 +26,7 @@ pub mod serde {
         fn save_to_path<P: AsRef<Path>>(&self, path: P) -> Result<()>;
     }
 
-    impl<'a, T: serde::de::DeserializeOwned + Serialize> TableIO<'a> for T {
+    impl<'a, T: serde::de::DeserializeOwned + Serialize + Table> TableIO<'a> for T {
         fn load_from_path<P: AsRef<Path>>(&'a mut self, path: P) -> Result<()> {
             let path = path.as_ref();
             if !path.exists() {
@@ -34,15 +35,30 @@ pub mod serde {
             }
             let file = File::open(path)?;
             let reader = BufReader::new(file);
-            let desered: T = bincode::deserialize_from(reader)?;
+            let desered: T = bincode::deserialize_from(reader)
+                .map_err(|e| anyhow!("Error reading {}: {}", path.display(), e))?;
             mem::drop(mem::replace(self, desered));
             Ok(())
         }
         fn save_to_path<P: AsRef<Path>>(&self, path: P) -> Result<()> {
-            let file = File::create(path.as_ref())?;
-            let writer = BufWriter::new(file);
-            bincode::serialize_into(writer, self)?;
-            Ok(())
+            use atomicwrites::{AllowOverwrite, AtomicFile, Error as AtomicFileError};
+
+            let modified = self.modified_flag().get();
+            let path = path.as_ref();
+            if !modified && path.exists() {
+                debug!("Table unmodified, will not save to {}", path.display());
+                return Ok(());
+            }
+
+            AtomicFile::new(path, AllowOverwrite)
+                .write(|file| -> StdResult<(), _> {
+                    let writer = BufWriter::new(file);
+                    bincode::serialize_into(writer, self)
+                })
+                .map_err(|e| match e {
+                    AtomicFileError::Internal(e) => e.into(),
+                    AtomicFileError::User(e) => e.into(),
+                })
         }
     }
 }
@@ -228,7 +244,24 @@ pub mod sync {
     use serde::de::Deserialize;
     use serde::ser::Serialize;
     use std::fmt;
-    use std::sync::atomic::{AtomicU32, Ordering};
+    use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+
+    #[derive(Debug, Default)]
+    pub struct AtomicFlag(AtomicBool);
+
+    impl AtomicFlag {
+        pub fn new() -> Self {
+            Self(AtomicBool::new(false))
+        }
+
+        pub fn set(&self) {
+            self.0.store(true, Ordering::Relaxed);
+        }
+
+        pub fn get(&self) -> bool {
+            self.0.load(Ordering::Relaxed)
+        }
+    }
 
     #[derive(Debug)]
     pub struct AtomicCounter(AtomicU32);
@@ -293,9 +326,9 @@ pub mod functional {
         fn init() -> Self {
             HashSet::new()
         }
-        fn accum(x: Self, y: Self) -> Self {
-            use std::ops::BitOr;
-            x.bitor(&y)
+        fn accum(mut x: Self, y: Self) -> Self {
+            x.extend(y);
+            x
         }
     }
 
@@ -350,5 +383,29 @@ pub mod functional {
         fn fold_into(self) -> T {
             self.fold(<T as Accumulable>::init(), <T as Accumulable>::accum)
         }
+    }
+}
+
+pub mod tabled {
+    use std::fmt::Display;
+    use tabled::{Alignment, Full, Modify, Style, Table, Tabled};
+
+    pub fn display_option<T: Display>(o: &Option<T>) -> String {
+        match o {
+            Some(s) => format!("{}", s),
+            None => "<NONE>".into(),
+        }
+    }
+
+    pub fn print_table<I, T>(iter: I)
+    where
+        T: Tabled,
+        I: IntoIterator<Item = T>,
+    {
+        let content = Table::new(iter)
+            .with(Style::blank())
+            .with(Modify::new(Full).with(Alignment::left()))
+            .to_string();
+        print!("{}", content);
     }
 }

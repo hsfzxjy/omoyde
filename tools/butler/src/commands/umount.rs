@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, util::tabled::print_table};
 use clap::Args;
 
 #[derive(Args)]
@@ -10,7 +10,7 @@ impl Umount {
     pub(super) fn run(self) -> Result<()> {
         let mut mpt = mpt_access_mut();
         mpt.entry(self.mpid).remove();
-        print!("{}", mpt);
+        print_table(mpt.records());
         Ok(())
     }
 }

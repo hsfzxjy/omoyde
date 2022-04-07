@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, util::tabled::print_table};
 use clap::Args;
 
 #[derive(Args)]
@@ -14,7 +14,7 @@ impl Mount {
         if let Some(p) = self.path {
             mpt.insert_or_update(p.resolve(), self.alias);
         }
-        print!("{}", mpt);
+        print_table(mpt.records());
         Ok(())
     }
 }

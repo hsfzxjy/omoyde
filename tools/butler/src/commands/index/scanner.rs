@@ -149,7 +149,7 @@ impl<'b, 'a: 'b> Scanner<'b, 'a> {
             if pids.contains(pid) {
                 return true;
             }
-            rec.status_mut().handle_local_missing();
+            rec.mark_missing();
             *rec.selected()
         });
 

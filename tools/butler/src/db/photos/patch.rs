@@ -3,7 +3,7 @@ use paste::paste;
 use std::borrow::Cow;
 use std::ptr::NonNull;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Diff<'a, T: Clone> {
     old: Cow<'a, T>,
     new: Option<Cow<'a, T>>,
@@ -56,6 +56,10 @@ impl<'b, 'a: 'b, 'c: 'a, T: Clone> Diff<'a, T> {
 
 impl<'a, T: Eq + Clone> Diff<'a, T> {
     fn changed(&self) -> bool {
+        if matches!(self.old, Cow::Borrowed(_)) && matches!(self.new, None | Some(Cow::Borrowed(_)))
+        {
+            return false;
+        }
         self.new
             .as_ref()
             .map(|new| new.ne(&self.old))
@@ -82,8 +86,10 @@ macro_rules! fields {
         ]}
     };
     (@iter define_struct, (), [ $(( $N: ident; $T: ty )),+ ]) => {
+        #[derive(Debug)]
         pub struct PhotoRecordDiff<'a> {
             pub pid: PID,
+            is_missing: bool,
             $(
                 pub $N: Diff<'a, $T>,
             )+
@@ -92,12 +98,14 @@ macro_rules! fields {
     (@iter to_owned, ($self: ident), [ $(( $N: ident; $T: ty )),+ ]) => {
         PhotoRecordDiff {
             pid: $self.pid,
+            is_missing: $self.is_missing,
             $( $N: $self.$N.to_owned(), )+
         }
     };
     (@iter new, ($arg: ident), [ $(( $N: ident; $T: ty )),+ ]) => {
         Self {
             pid: $arg.pid,
+            is_missing: false,
             $( $N: (&$arg.$N).into(), )+
         }
     };
@@ -106,8 +114,12 @@ macro_rules! fields {
             fields!(@call $action, $args, $N, $T);
         )+
     };
-    (@call write, ($self: ident, $arg: ident), $N: ident, $T: ty) => {
-        $self.$N.write(&mut $arg.$N);
+    (@call write, ($self: ident, $arg: ident, $changed: ident), $N: ident, $T: ty) => {
+        if $self.$N.changed() {
+            $self.$N.old.to_mut();
+            $self.$N.write(&mut $arg.$N);
+            $changed = true;
+        }
     };
     (@call accessor, (), $N: ident, $T: ty) => {
         paste!{
@@ -138,9 +150,10 @@ macro_rules! fields {
 fields!(define_struct; ());
 
 impl<'a> PhotoRecordDiff<'a> {
-    fn write<'b, 'c>(&'b self, rec: &'c mut PhotoRecord) -> &'c PhotoRecord {
-        fields!(write; (self, rec));
-        rec
+    fn write<'b, 'c>(&'b mut self, rec: &'c mut PhotoRecord) -> (&'c PhotoRecord, bool) {
+        let mut changed = false;
+        fields!(write; (self, rec, changed));
+        (rec, changed)
     }
     pub fn new(rec: &'a PhotoRecord) -> Self {
         fields!(new; (rec))
@@ -167,6 +180,9 @@ impl<'b, 'a: 'b> PhotoRecordPatch<'b, 'a> {
         self.rec_diff = diff;
         self
     }
+    pub fn mark_missing(&mut self) {
+        self.rec_diff.is_missing = true
+    }
     pub fn into_diff<'c>(mut self) -> PhotoRecordDiff<'c> {
         self.commit_at_drop = false;
         let ret = self.rec_diff.to_owned();
@@ -182,8 +198,12 @@ impl<'b, 'a: 'b> Drop for PhotoRecordPatch<'b, 'a> {
         }
         let ptr = unsafe { self.ptr.as_mut() };
 
-        let is_dirty = self.rec_diff.is_dirty();
-        self.rec_diff.status.get_mut().handle_dirty_mark(is_dirty);
+        if *self.selected() && self.rec_diff.is_missing {
+            self.status_mut().handle_local_missing();
+        } else {
+            let is_dirty = self.rec_diff.is_dirty();
+            self.status_mut().handle_dirty_mark(is_dirty);
+        }
         {
             let status = &self.rec_diff.status;
             if status.changed() && *status.current() == Committed {
@@ -191,7 +211,11 @@ impl<'b, 'a: 'b> Drop for PhotoRecordPatch<'b, 'a> {
             }
         }
 
-        let rec = self.rec_diff.write(unsafe { self.rec.as_mut() });
+        let (rec, changed) = self.rec_diff.write(unsafe { self.rec.as_mut() });
+
+        if changed {
+            unsafe { self.ptr.as_mut() }.modified_flag().set();
+        }
 
         self.rec_diff.selected.run_if_changed(|_o, _n| {
             ptr.index.flip_selected(rec);

@@ -84,6 +84,6 @@ impl<'a> TableAccessMut<'a, PhotoTable> {
     }
     pub fn insert_lphoto(&mut self, file: LocalPhoto) -> PID {
         let rec = PhotoRecord::new(0, file);
-        self.insert_and_view(rec).pid
+        self.insert(rec).pid
     }
 }

@@ -1,11 +1,12 @@
 mod access;
+mod index;
 mod keys;
 mod patch;
-mod record;
-mod serde;
+mod records;
 mod table;
 
 pub use access::*;
+pub use index::*;
 pub use patch::*;
-pub use record::*;
+pub use records::*;
 pub use table::*;

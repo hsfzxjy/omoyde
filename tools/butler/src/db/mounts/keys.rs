@@ -7,6 +7,7 @@ impl TableKey<MountPointTable> for Uuid {
         table: &'b mut MountPointTable,
     ) -> TableHandle<'b, MountPointTable> {
         table
+            .index
             .uuid2path
             .get(self.borrow())
             .cloned()
